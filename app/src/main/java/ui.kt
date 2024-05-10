@@ -1,6 +1,5 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,11 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
-    private val taskGroup = tasksGroup
+class MainScreenUI {
 
     @Composable
-    fun taskGroupContainer(tasksGroupInstance: TasksGroup) {
+    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
         var showDialog by remember {
             mutableStateOf(false)
         }
@@ -54,20 +52,24 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
         ) {
             Column {
                 Text(
-                    text = tasksGroupInstance.taskGroupName,
+                    text = "${tasksGroupInstance.taskGroupName} - Pending task: ${tasksGroupInstance.taskList.size}",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showTasks = !showTasks }
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onLongPress = { showDeleteGroup = true }
+                                onLongPress = { showDeleteGroup = true },
+                                onTap = { showTasks = !showTasks }
                             )
                         }
                 )
                 if (showTasks) {
                     for (task in tasksGroupInstance.taskList) {
-                        taskElement(task = task)
+                        taskElement(
+                            task = task,
+                            tasksGroupInstance = tasksGroupInstance
+                        )
                     }
+
                     addNewTaskButton {
                         showDialog = true
                     }
@@ -79,16 +81,22 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
                 }
 
                 if (showDeleteGroup){
-                    deleteGroupDialog(onDismissRequest = { showDeleteGroup = false }) {
-                        
-                    }
+                    deleteGroupDialog(
+                        onDismissRequest = { showDeleteGroup = false },
+                        onClick = { tasksGroup.remove(tasksGroupInstance) }
+                    )
                 }
             }
         }
     }
 
     @Composable
-    fun taskElement(task: Task) {
+    fun taskElement(task: Task, tasksGroupInstance: TasksGroup) {
+
+        var showDeleteTaskDialog by remember {
+            mutableStateOf(false)
+        }
+
         Box(
             modifier = Modifier
                 .size(200.dp, 20.dp)
@@ -96,15 +104,24 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = {
-
+                            showDeleteTaskDialog = true
                         }
                     )
                 }
         ) {
             Row {
                 Checkbox(checked = false, onCheckedChange = null)
-                Text(text = task.getTaskDescription())
+                Text(
+                    text = task.getTaskDescription()
+                )
             }
+        }
+
+        if (showDeleteTaskDialog){
+            deleteTaskDialog(
+                onDismissRequest = { showDeleteTaskDialog = false },
+                onClick = {tasksGroupInstance.removeTask(task)}
+            )
         }
     }
 
@@ -128,7 +145,7 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
     }
 
     @Composable
-    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit) {
+    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>) {
         var text by remember {
             mutableStateOf("")
         }
@@ -147,7 +164,7 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Button(onClick = {
-                        taskGroup?.add(TasksGroup(text))
+                        tasksGroup.add(TasksGroup(text))
                         onDismissRequest()
                     }) {
                         Text(text = "Save")
@@ -177,7 +194,7 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Button(onClick = {
-                        tasksGroupInstance.taskList.add(Task(text))
+                        tasksGroupInstance.addNewTask(text)
                         onDismissRequest()
                     }) {
                         Text(text = "Save")
@@ -223,7 +240,7 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
                     Box(modifier = Modifier
                         .padding(top = 20.dp, end = 20.dp)
                         .size(180.dp)) {
-                        Text(text = "You have 5\nassigmnents left.")
+                        Text(text = "You have 5\nassignments left.")
                     }
                 }
             }
@@ -240,8 +257,43 @@ class MainScreenUI(tasksGroup: MutableList<TasksGroup>? = null) {
             ) {
                 Column {
                     Text(text = "Are you sure you want to delete this group")
-                    Button(onClick = {}) {
-                        Text(text = "Save")
+                    Row {
+                        Button(onClick = {onDismissRequest()}) {
+                            Text(text = "Cancel")
+                        }
+                        Button(onClick = {
+                            onClick()
+                            onDismissRequest()
+                        }) {
+                            Text(text = "Delete")
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    @Composable
+    fun deleteTaskDialog(onDismissRequest: () -> Unit, onClick: () -> Unit) {
+
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Box(
+                modifier = Modifier
+                    .background(Color.LightGray)
+                    .size(190.dp)
+            ) {
+                Column {
+                    Text(text = "Are you sure you want to delete this task")
+                    Row {
+                        Button(onClick = {onDismissRequest()}) {
+                            Text(text = "Cancel")
+                        }
+                        Button(onClick = {
+                            onClick()
+                            onDismissRequest()
+                        }) {
+                            Text(text = "Delete")
+                        }
                     }
                 }
             }

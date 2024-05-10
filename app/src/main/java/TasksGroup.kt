@@ -1,7 +1,10 @@
-class TasksGroup(taskGroupName: String) {
-    var taskGroupName: String = taskGroupName
-    var numberOfTasks = 0
-    var taskList = mutableListOf<Task>()
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+
+class TasksGroup(var taskGroupName: String) {
+    var taskList = mutableStateListOf<Task>()
 
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName
@@ -9,20 +12,13 @@ class TasksGroup(taskGroupName: String) {
 
     fun addNewTask(task: String){
         taskList.add(Task(task))
-        this.numberOfTasks++
     }
 
     fun removeTask(task: Task){
         taskList.remove(task)
-        this.numberOfTasks--
     }
 
     fun clearTaskGroup(){
         taskList.clear()
-        this.numberOfTasks = 0
-    }
-
-    fun getLenght(): Int {
-        return numberOfTasks
     }
 }
