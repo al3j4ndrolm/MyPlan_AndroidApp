@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -18,17 +20,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
 class MainScreenUI {
+
+    val yellowColor = Color.hsl(36F, 1F, .67F)
+    val redWineColor = Color.hsl(0F, .76F, .29F)
+    val fontFamily = FontFamily(Font(R.font.readexpro))
 
     @Composable
     fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
@@ -47,21 +62,54 @@ class MainScreenUI {
 
         Box(
             modifier = Modifier
-                .background(color = Color.LightGray)
-                .size(200.dp, 90.dp)
+                .padding(vertical = 8.dp)
+                .background(
+                    color = yellowColor,
+                    shape = RoundedCornerShape(
+                        topEnd = 12.dp,
+                        bottomEnd = 12.dp
+                    )
+                )
+                .size(300.dp, 100.dp)
         ) {
             Column {
-                Text(
-                    text = "${tasksGroupInstance.taskGroupName} - Pending task: ${tasksGroupInstance.taskList.size}",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = { showDeleteGroup = true },
-                                onTap = { showTasks = !showTasks }
-                            )
-                        }
-                )
+                Box(modifier = Modifier.padding(start = 8.dp)) {
+                    Column {
+                        Text(
+                            text = buildAnnotatedString {
+                                // Applying styles directly to parts of the text
+                                withStyle(style = SpanStyle(
+                                    fontSize = 35.sp,
+                                    fontWeight = FontWeight.Light,
+                                    color = redWineColor
+                                )
+                                ) {
+                                    append(tasksGroupInstance.taskGroupName)
+                                }
+                                append("\n")
+                                withStyle(style = SpanStyle(
+                                    fontSize = 35.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = redWineColor
+                                )) {
+                                    append(tasksGroupInstance.taskGroupNumber)
+                                }
+                            },style = TextStyle(
+                                lineHeight = 36.sp, // Set line height here
+                                fontFamily = fontFamily,
+                                fontSize = 35.sp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = { showDeleteGroup = true },
+                                        onTap = { showTasks = !showTasks }
+                                    )
+                                }
+                        )
+                    }
+                }
+
                 if (showTasks) {
                     for (task in tasksGroupInstance.taskList) {
                         taskElement(
@@ -80,7 +128,7 @@ class MainScreenUI {
                     }
                 }
 
-                if (showDeleteGroup){
+                if (showDeleteGroup) {
                     deleteGroupDialog(
                         onDismissRequest = { showDeleteGroup = false },
                         onClick = { tasksGroup.remove(tasksGroupInstance) }
@@ -117,10 +165,10 @@ class MainScreenUI {
             }
         }
 
-        if (showDeleteTaskDialog){
+        if (showDeleteTaskDialog) {
             deleteTaskDialog(
                 onDismissRequest = { showDeleteTaskDialog = false },
-                onClick = {tasksGroupInstance.removeTask(task)}
+                onClick = { tasksGroupInstance.removeTask(task) }
             )
         }
     }
@@ -132,8 +180,19 @@ class MainScreenUI {
 
     @Composable
     fun addNewGroupButton(onClick: () -> Unit) {
-        Button(onClick = { onClick() }) {
-            Text(text = "Add new group")
+        Box(modifier = Modifier.fillMaxSize()) {
+            Button(
+                onClick = { onClick() },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.BottomEnd),
+                colors = ButtonDefaults.buttonColors(yellowColor)
+            ) {
+                Text(
+                    text = "Add new group",
+                    color = redWineColor
+                )
+            }
         }
     }
 
@@ -150,6 +209,10 @@ class MainScreenUI {
             mutableStateOf("")
         }
 
+        var number by remember {
+            mutableStateOf("")
+        }
+
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
@@ -163,8 +226,13 @@ class MainScreenUI {
                         onValueChange = { newText -> text = newText },
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    TextField(
+                        value = number,
+                        onValueChange = { newText -> number = newText },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                     Button(onClick = {
-                        tasksGroup.add(TasksGroup(text))
+                        tasksGroup.add(TasksGroup(text, number))
                         onDismissRequest()
                     }) {
                         Text(text = "Save")
@@ -220,12 +288,29 @@ class MainScreenUI {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(Color.hsl(0F, .76F, .29F))
+                .background(redWineColor)
         ) {
             Row {
-                Column {
-                    Box(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
-                        Text(text = "March 29, 2024\nWelcome back\nAlejandro")
+                Column(Modifier.padding(start = 9.dp, top = 8.dp)) {
+                    Box {
+                        Text(
+                            text = "March 29, 2024",
+                            style = TextStyle(
+                                fontFamily = FontFamily(Font(R.font.readexpro)),
+                                fontSize = 12.sp,
+                                color = yellowColor
+                            )
+                        )
+                    }
+                    Box {
+                        Text(
+                            text = "Welcome back\nAlejandro",
+                            style = TextStyle(
+                                fontFamily = FontFamily(Font(R.font.readexpro)),
+                                fontSize = 20.sp,
+                                color = yellowColor
+                            )
+                        )
                     }
                 }
                 Image(
@@ -234,13 +319,22 @@ class MainScreenUI {
                     modifier = Modifier
                         .padding(top = 8.dp, bottom = 8.dp)
                         .size(100.dp),
-                    colorFilter = ColorFilter.tint(Color.hsl(36F, 1F, .67F))
+                    colorFilter = ColorFilter.tint(yellowColor)
                 )
                 Column {
-                    Box(modifier = Modifier
-                        .padding(top = 20.dp, end = 20.dp)
-                        .size(180.dp)) {
-                        Text(text = "You have 5\nassignments left.")
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 22.dp, end = 25.dp)
+                            .size(180.dp)
+                    ) {
+                        Text(
+                            text = "You have 5\npending task.",
+                            style = TextStyle(
+                                fontFamily = FontFamily(Font(R.font.readexpro)),
+                                fontSize = 18.sp,
+                                color = yellowColor
+                            )
+                        )
                     }
                 }
             }
@@ -258,7 +352,7 @@ class MainScreenUI {
                 Column {
                     Text(text = "Are you sure you want to delete this group")
                     Row {
-                        Button(onClick = {onDismissRequest()}) {
+                        Button(onClick = { onDismissRequest() }) {
                             Text(text = "Cancel")
                         }
                         Button(onClick = {
@@ -273,6 +367,7 @@ class MainScreenUI {
             }
         }
     }
+
     @Composable
     fun deleteTaskDialog(onDismissRequest: () -> Unit, onClick: () -> Unit) {
 
@@ -285,7 +380,7 @@ class MainScreenUI {
                 Column {
                     Text(text = "Are you sure you want to delete this task")
                     Row {
-                        Button(onClick = {onDismissRequest()}) {
+                        Button(onClick = { onDismissRequest() }) {
                             Text(text = "Cancel")
                         }
                         Button(onClick = {

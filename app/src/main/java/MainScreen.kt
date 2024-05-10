@@ -1,3 +1,4 @@
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 class MainScreen {
-    private var groupsList = mutableStateListOf<TasksGroup>()
+    private var groupsList = mutableStateListOf<TasksGroup>(TasksGroup("Math", "1A"))
 
     @Composable
     fun run(){
@@ -25,9 +26,11 @@ class MainScreen {
         Box(modifier = Modifier
             .fillMaxSize()
         ){
-            Box {
+            Box(modifier = Modifier.fillMaxSize()) {
                 ui.mainScreenBackground()
-                Column(modifier = Modifier.padding(top = 10.dp)) {
+                Column(modifier = Modifier.padding(top = 10.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                    ) {
                     ui.mainScreenHeader()
                     if (groupsList.size != 0 ){
                         for (taskGroup in groupsList){
