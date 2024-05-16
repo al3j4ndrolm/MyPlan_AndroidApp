@@ -12,12 +12,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-class MainScreen {
-    private var groupsList = mutableStateListOf<TasksGroup>(TasksGroup("Math", "1A"))
+class MainScreen(tasksGroups: List<TasksGroup>, val dataManager: DataManager) {
+
+    var groupsList = mutableStateListOf<TasksGroup>()
+    private val tasksGroups = tasksGroups
 
     @Composable
-    fun run(){
+    fun Run(){
         val ui = MainScreenUI()
+
+        for (taskGroup in tasksGroups){
+            groupsList.add(taskGroup)
+        }
+        dataManager.saveInformation(groupsList)
 
         var showDialog by remember {
         mutableStateOf(false)
@@ -47,8 +54,10 @@ class MainScreen {
                 if (showDialog){
                     ui.addNewTaskGroupDialog(
                         onDismissRequest = {showDialog = false},
-                        tasksGroup = groupsList
+                        tasksGroup = groupsList,
+                        saveData = {}
                     )
+
                 }
             }
         }

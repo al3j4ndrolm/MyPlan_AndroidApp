@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,10 +41,9 @@ import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
 class MainScreenUI {
-
-    val yellowColor = Color.hsl(36F, 1F, .67F)
-    val redWineColor = Color.hsl(0F, .76F, .29F)
-    val fontFamily = FontFamily(Font(R.font.readexpro))
+    private val yellowColor = Color.hsl(36F, 1F, .67F)
+    private val redWineColor = Color.hsl(0F, .76F, .29F)
+    private val fontFamily = FontFamily(Font(R.font.readexpro))
 
     @Composable
     fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
@@ -59,6 +59,10 @@ class MainScreenUI {
             mutableStateOf(false)
         }
 
+        var containerSize by remember {
+            mutableStateOf(250)
+        }
+
 
         Box(
             modifier = Modifier
@@ -70,47 +74,84 @@ class MainScreenUI {
                         bottomEnd = 12.dp
                     )
                 )
-                .size(300.dp, 100.dp)
+                .width(containerSize.dp)
+
         ) {
             Column {
                 Box(modifier = Modifier.padding(start = 8.dp)) {
                     Column {
-                        Text(
-                            text = buildAnnotatedString {
-                                // Applying styles directly to parts of the text
-                                withStyle(style = SpanStyle(
-                                    fontSize = 35.sp,
-                                    fontWeight = FontWeight.Light,
-                                    color = redWineColor
-                                )
-                                ) {
-                                    append(tasksGroupInstance.taskGroupName)
-                                }
-                                append("\n")
-                                withStyle(style = SpanStyle(
-                                    fontSize = 35.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = redWineColor
-                                )) {
-                                    append(tasksGroupInstance.taskGroupNumber)
-                                }
-                            },style = TextStyle(
-                                lineHeight = 36.sp, // Set line height here
-                                fontFamily = fontFamily,
-                                fontSize = 35.sp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onLongPress = { showDeleteGroup = true },
-                                        onTap = { showTasks = !showTasks }
+                        if (!showTasks){
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(style = SpanStyle(
+                                        fontSize = 35.sp,
+                                        fontWeight = FontWeight.Light,
+                                        color = redWineColor
                                     )
-                                }
-                        )
+                                    ) {
+                                        append(tasksGroupInstance.taskGroupName)
+                                    }
+                                    append("\n")
+                                    withStyle(style = SpanStyle(
+                                        fontSize = 35.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = redWineColor
+                                    )) {
+                                        append(tasksGroupInstance.taskGroupNumber)
+                                    }
+                                },style = TextStyle(
+                                    lineHeight = 36.sp, // Set line height here
+                                    fontFamily = fontFamily,
+                                    fontSize = 35.sp),
+                                modifier = Modifier
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onLongPress = { showDeleteGroup = true },
+                                            onTap = { showTasks = !showTasks}
+                                        )
+                                    }
+                            )
+                        }
                     }
                 }
 
+                if(!showTasks){
+                    containerSize = 250
+                }
                 if (showTasks) {
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(
+                                fontSize = 35.sp,
+                                fontWeight = FontWeight.Light,
+                                color = redWineColor
+                            )
+                            ) {
+                                append(tasksGroupInstance.taskGroupName)
+                            }
+                            append(" ")
+                            withStyle(style = SpanStyle(
+                                fontSize = 35.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = redWineColor
+                            )) {
+                                append(tasksGroupInstance.taskGroupNumber)
+                            }
+                        },style = TextStyle(
+                            lineHeight = 36.sp, // Set line height here
+                            fontFamily = fontFamily,
+                            fontSize = 35.sp),
+                        modifier = Modifier
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = { showDeleteGroup = true },
+                                    onTap = { showTasks = !showTasks}
+                                )
+                            }
+                            .padding(start = 8.dp)
+                    )
+
+                    containerSize = 350
                     for (task in tasksGroupInstance.taskList) {
                         taskElement(
                             task = task,
@@ -124,7 +165,9 @@ class MainScreenUI {
                     if (showDialog) {
                         addNewTaskDialog(
                             tasksGroupInstance,
-                            onDismissRequest = { showDialog = false })
+                            onDismissRequest = { showDialog = false },
+
+                            )
                     }
                 }
 
@@ -147,8 +190,9 @@ class MainScreenUI {
 
         Box(
             modifier = Modifier
-                .size(200.dp, 20.dp)
-                .background(color = Color.LightGray)
+                .padding(4.dp)
+                .width(330.dp)
+                .background(color = yellowColor)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = {
@@ -158,9 +202,16 @@ class MainScreenUI {
                 }
         ) {
             Row {
-                Checkbox(checked = false, onCheckedChange = null)
+                Checkbox(
+                    checked = false,
+                    onCheckedChange = null,
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                )
                 Text(
-                    text = task.getTaskDescription()
+                    text = task.getTaskDescription(),
+                    modifier = Modifier
+                        .padding(start = 3.dp)
                 )
             }
         }
@@ -198,13 +249,26 @@ class MainScreenUI {
 
     @Composable
     fun addNewTaskButton(onClick: () -> Unit) {
-        Button(onClick = { onClick() }) {
-            Text(text = "Add new task")
+        Box(modifier = Modifier
+            .fillMaxWidth(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            Button(
+                onClick = { onClick() },
+                colors = ButtonDefaults.buttonColors(yellowColor)
+            ) {
+                Text(
+                    text = "Add new task +",
+                    color = redWineColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+
     }
 
     @Composable
-    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>) {
+    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>, saveData: () -> Unit) {
         var text by remember {
             mutableStateOf("")
         }
@@ -233,6 +297,7 @@ class MainScreenUI {
                     )
                     Button(onClick = {
                         tasksGroup.add(TasksGroup(text, number))
+                        saveData()
                         onDismissRequest()
                     }) {
                         Text(text = "Save")
@@ -362,7 +427,6 @@ class MainScreenUI {
                             Text(text = "Delete")
                         }
                     }
-
                 }
             }
         }

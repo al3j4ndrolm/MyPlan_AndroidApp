@@ -3,7 +3,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 
-class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
+data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
     var taskList = mutableStateListOf<Task>()
 
     fun setNewTaskGroupName(newName: String){

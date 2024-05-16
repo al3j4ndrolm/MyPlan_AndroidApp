@@ -1,7 +1,9 @@
 package com.example.totd_final
 
+import DataManager
 import MainScreen
 import android.os.Bundle
+import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +17,7 @@ import com.example.totd_final.ui.theme.TOTD_FinalTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             TOTD_FinalTheme {
                 // A surface container using the 'background' color from the theme
@@ -22,8 +25,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val mainScreen = MainScreen()
-                    mainScreen.run()
+                    val dataManager = DataManager(this)
+                    val mainScreen = MainScreen(dataManager.readString(), dataManager)
+                    mainScreen.Run()
                 }
             }
         }
@@ -34,8 +38,9 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GreetingPreview() {
+
     TOTD_FinalTheme {
-        val mainScreen = MainScreen()
-        mainScreen.run()
+//        val mainScreen = MainScreen(dataManager.readString(), dataManager)
+//        mainScreen.run()
     }
 }
