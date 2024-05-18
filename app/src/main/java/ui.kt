@@ -40,10 +40,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI {
+class MainScreenUI(dataManager: DataManager) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
+    val dataManager = dataManager
 
     @Composable
     fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
@@ -155,7 +156,8 @@ class MainScreenUI {
                     for (task in tasksGroupInstance.taskList) {
                         taskElement(
                             task = task,
-                            tasksGroupInstance = tasksGroupInstance
+                            tasksGroupInstance = tasksGroupInstance,
+                            tasksGroup = tasksGroup
                         )
                     }
 
@@ -166,7 +168,7 @@ class MainScreenUI {
                         addNewTaskDialog(
                             tasksGroupInstance,
                             onDismissRequest = { showDialog = false },
-
+                            tasksGroup = tasksGroup
                             )
                     }
                 }
@@ -174,7 +176,10 @@ class MainScreenUI {
                 if (showDeleteGroup) {
                     deleteGroupDialog(
                         onDismissRequest = { showDeleteGroup = false },
-                        onClick = { tasksGroup.remove(tasksGroupInstance) }
+                        onClick = {
+                            tasksGroup.remove(tasksGroupInstance)
+                            dataManager.saveInformation(tasksGroup)
+                        }
                     )
                 }
             }
@@ -182,7 +187,7 @@ class MainScreenUI {
     }
 
     @Composable
-    fun taskElement(task: Task, tasksGroupInstance: TasksGroup) {
+    fun taskElement(task: Task, tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
 
         var showDeleteTaskDialog by remember {
             mutableStateOf(false)
@@ -219,7 +224,10 @@ class MainScreenUI {
         if (showDeleteTaskDialog) {
             deleteTaskDialog(
                 onDismissRequest = { showDeleteTaskDialog = false },
-                onClick = { tasksGroupInstance.removeTask(task) }
+                onClick = {
+                    tasksGroupInstance.removeTask(task)
+                    dataManager.saveInformation(tasksGroup)
+                }
             )
         }
     }
@@ -233,7 +241,7 @@ class MainScreenUI {
     fun addNewGroupButton(onClick: () -> Unit) {
         Box(modifier = Modifier.fillMaxSize()) {
             Button(
-                onClick = { onClick() },
+                onClick = {onClick() },
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.BottomEnd),
@@ -308,7 +316,7 @@ class MainScreenUI {
     }
 
     @Composable
-    fun addNewTaskDialog(tasksGroupInstance: TasksGroup, onDismissRequest: () -> Unit) {
+    fun addNewTaskDialog(tasksGroupInstance: TasksGroup, onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>) {
         var text by remember {
             mutableStateOf("")
         }
@@ -324,11 +332,12 @@ class MainScreenUI {
                     TextField(
                         value = text,
                         onValueChange = { newText -> text = newText },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Button(onClick = {
                         tasksGroupInstance.addNewTask(text)
                         onDismissRequest()
+                        dataManager.saveInformation(tasksGroup)
                     }) {
                         Text(text = "Save")
                     }

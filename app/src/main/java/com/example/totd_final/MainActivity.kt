@@ -2,6 +2,7 @@ package com.example.totd_final
 
 import DataManager
 import MainScreen
+import TasksGroup
 import android.os.Bundle
 import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
@@ -25,8 +26,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     val dataManager = DataManager(this)
-                    val mainScreen = MainScreen(dataManager.readString(), dataManager)
+                    val initialList = mutableListOf<TasksGroup>()
+
+                    if (dataManager.readString().isEmpty()){
+                        dataManager.saveInformation(initialList)
+                    }
+
+                    val mainScreen = MainScreen(dataManager.readString(), dataManager = dataManager)
                     mainScreen.Run()
                 }
             }
