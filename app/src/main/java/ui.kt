@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,14 +41,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI(dataManager: DataManager) {
+class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
     val dataManager = dataManager
+    val taskGroupLists = taskGroupLists
+
 
     @Composable
-    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
+    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
         var showDialog by remember {
             mutableStateOf(false)
         }
@@ -146,7 +149,7 @@ class MainScreenUI(dataManager: DataManager) {
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onLongPress = { showDeleteGroup = true },
-                                    onTap = { showTasks = !showTasks}
+                                    onTap = { showTasks = !showTasks }
                                 )
                             }
                             .padding(start = 8.dp)
@@ -157,7 +160,8 @@ class MainScreenUI(dataManager: DataManager) {
                         taskElement(
                             task = task,
                             tasksGroupInstance = tasksGroupInstance,
-                            tasksGroup = tasksGroup
+                            tasksGroup = tasksGroup,
+                            updateUncompletedTask = { updateUncompletedTask() }
                         )
                     }
 
@@ -187,36 +191,46 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun taskElement(task: Task, tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>) {
+    fun taskElement(task: Task, tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
 
         var showDeleteTaskDialog by remember {
             mutableStateOf(false)
         }
 
+        var status by remember {
+            mutableStateOf(task.getState())
+        }
+
         Box(
             modifier = Modifier
-                .padding(4.dp)
                 .width(330.dp)
                 .background(color = yellowColor)
                 .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            showDeleteTaskDialog = true
-                        }
-                    )
+                    detectTapGestures(onLongPress = { showDeleteTaskDialog = true })
                 }
+                .padding(bottom = 12.dp)
         ) {
-            Row {
+
+            Row(
+                verticalAlignment = Alignment.Top
+            ) {
                 Checkbox(
-                    checked = false,
-                    onCheckedChange = null,
+                    checked = status,
+                    onCheckedChange = {
+                        status = task.setState(!task.getState())
+                        updateUncompletedTask()
+                    },
                     modifier = Modifier
-                        .padding(start = 5.dp)
+                        .alignByBaseline() // Explicitly align by baseline
+                        .size(24.dp) // Specify a fixed size for consistent dimensions
+                        .padding(start = 12.dp)
                 )
+
                 Text(
                     text = task.getTaskDescription(),
                     modifier = Modifier
-                        .padding(start = 3.dp)
+                        .alignByBaseline() // Align text by its first baseline
+                        .padding(start = 8.dp)
                 )
             }
         }
@@ -357,7 +371,12 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun mainScreenHeader() {
+    fun mainScreenHeader(uncompletedTask: Int) {
+
+        var uncompletedTask by remember {
+            mutableIntStateOf(uncompletedTask)
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -401,8 +420,10 @@ class MainScreenUI(dataManager: DataManager) {
                             .padding(top = 22.dp, end = 25.dp)
                             .size(180.dp)
                     ) {
+
+                        uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
                         Text(
-                            text = "You have 5\npending task.",
+                            text = "You have ${uncompletedTask}",
                             style = TextStyle(
                                 fontFamily = FontFamily(Font(R.font.readexpro)),
                                 fontSize = 18.sp,

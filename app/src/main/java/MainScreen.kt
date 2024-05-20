@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,18 +15,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager) {
+
     val dataManager = dataManager
     var groupsList = tasksGroups.toMutableStateList()
+    val taskGroupLists = TaskGroupLists(groupsList)
 
 
     @Composable
     fun Run(){
-        val ui = MainScreenUI(dataManager)
-
-//        dataManager.saveInformation(groupsList)
+        val ui = MainScreenUI(dataManager, taskGroupLists)
 
         var showDialog by remember {
         mutableStateOf(false)
+        }
+
+        var uncompletedTask by remember {
+            mutableIntStateOf(taskGroupLists.getNumberOfIncompleteTasks())
         }
 
         Box(modifier = Modifier
@@ -36,12 +41,15 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                 Column(modifier = Modifier.padding(top = 10.dp),
                     verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                    ui.mainScreenHeader()
+                    ui.mainScreenHeader(uncompletedTask)
                     if (groupsList.size != 0 ){
                         for (taskGroup in groupsList){
                             ui.TaskGroupContainer(
                                 tasksGroupInstance = taskGroup,
-                                tasksGroup = groupsList
+                                tasksGroup = groupsList,
+                                updateUncompletedTask = {
+                                    uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
+                                }
                             )
                         }
                     } else {
@@ -55,7 +63,6 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                         tasksGroup = groupsList,
                         saveData = {dataManager.saveInformation(groupsList)}
                     )
-
                 }
             }
         }

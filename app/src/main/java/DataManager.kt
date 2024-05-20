@@ -3,14 +3,14 @@ import java.io.File
 import android.content.Context
 
 class DataManager(context: Context) {
-    private val file: File = File(context.filesDir, "appdata.json")
+    private val file: File = File(context.filesDir, "totddata.json")
     private val gson = Gson()
     private var json: String = ""
 
 
     fun saveInformation(data: MutableList<TasksGroup>): String {
         try {
-            val dataHolder = Test(data)
+            val dataHolder = Data(data)
             json = gson.toJson(dataHolder)
             file.writeText(json)
         } catch (e: Exception) {
@@ -22,7 +22,11 @@ class DataManager(context: Context) {
 
     fun readString(): MutableList<TasksGroup> {
         val jsonData = file.readText()
-        val dataHolder = gson.fromJson(jsonData, Test::class.java)
+        val dataHolder = gson.fromJson(jsonData, Data::class.java)
         return dataHolder.data.toMutableList()
+    }
+
+    fun getFile(): File {
+        return this.file
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
     var taskList = mutableStateListOf<Task>()
 
+
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName
     }
@@ -16,9 +17,12 @@ data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
 
     fun removeTask(task: Task){
         taskList.remove(task)
+
     }
 
     fun clearTaskGroup(){
         taskList.clear()
+
     }
+
 }
