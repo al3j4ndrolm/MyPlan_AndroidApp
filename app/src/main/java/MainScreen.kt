@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,7 +22,7 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
 
     @Composable
     fun Run(){
-        val ui = MainScreenUI(dataManager, taskGroupLists)
+        val ui = dataManager.let { MainScreenUI(it, taskGroupLists) }
 
         var showDialog by remember {
         mutableStateOf(false)
@@ -45,12 +44,12 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                     if (groupsList.size != 0 ){
                         for (taskGroup in groupsList){
                             ui.TaskGroupContainer(
-                                tasksGroupInstance = taskGroup,
-                                tasksGroup = groupsList,
-                                updateUncompletedTask = {
-                                    uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
-                                }
-                            )
+                                    tasksGroupInstance = taskGroup,
+                                    tasksGroup = groupsList,
+                                    updateUncompletedTask = {
+                                        uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
+                                    }
+                                )
                         }
                     } else {
                         ui.noTaskMessage()
@@ -59,10 +58,9 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                 }
                 if (showDialog){
                     ui.addNewTaskGroupDialog(
-                        onDismissRequest = {showDialog = false},
-                        tasksGroup = groupsList,
-                        saveData = {dataManager.saveInformation(groupsList)}
-                    )
+                            onDismissRequest = {showDialog = false},
+                            tasksGroup = groupsList
+                        ) { dataManager.saveInformation(groupsList) }
                 }
             }
         }

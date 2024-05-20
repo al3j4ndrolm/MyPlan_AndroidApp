@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
+class MainScreenUI(dataManager: DataManager? = null, taskGroupLists: TaskGroupLists? = null) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
@@ -182,7 +182,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                         onDismissRequest = { showDeleteGroup = false },
                         onClick = {
                             tasksGroup.remove(tasksGroupInstance)
-                            dataManager.saveInformation(tasksGroup)
+                            dataManager?.saveInformation(tasksGroup)
                         }
                     )
                 }
@@ -240,7 +240,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 onDismissRequest = { showDeleteTaskDialog = false },
                 onClick = {
                     tasksGroupInstance.removeTask(task)
-                    dataManager.saveInformation(tasksGroup)
+                    dataManager?.saveInformation(tasksGroup)
                 }
             )
         }
@@ -290,7 +290,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
     }
 
     @Composable
-    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>, saveData: () -> Unit) {
+    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>?, saveData: () -> Unit) {
         var text by remember {
             mutableStateOf("")
         }
@@ -302,8 +302,8 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
-                    .background(Color.LightGray)
-                    .size(190.dp)
+                    .background(yellowColor)
+                    .size(290.dp)
             ) {
                 Column {
                     Text(text = "Add new group")
@@ -317,12 +317,21 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                         onValueChange = { newText -> number = newText },
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Button(onClick = {
-                        tasksGroup.add(TasksGroup(text, number))
-                        saveData()
-                        onDismissRequest()
-                    }) {
-                        Text(text = "Save")
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.End)
+                    ){
+                        Button(
+                            modifier = Modifier,
+                            onClick = {
+                                if (tasksGroup != null) {
+                                    tasksGroup.add(TasksGroup(text, number))
+                                }
+                                saveData()
+                                onDismissRequest()
+                            }) {
+                            Text(text = "Save")
+                        }
                     }
                 }
             }
@@ -351,7 +360,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                     Button(onClick = {
                         tasksGroupInstance.addNewTask(text)
                         onDismissRequest()
-                        dataManager.saveInformation(tasksGroup)
+                        dataManager?.saveInformation(tasksGroup)
                     }) {
                         Text(text = "Save")
                     }
@@ -417,19 +426,18 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 Column {
                     Box(
                         modifier = Modifier
-                            .padding(top = 22.dp, end = 25.dp)
+                            .padding(top = 15.dp, end = 25.dp)
                             .size(180.dp)
                     ) {
 
-                        uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
-                        Text(
-                            text = "You have ${uncompletedTask}",
+                        uncompletedTask = (taskGroupLists?.getNumberOfIncompleteTasks() ?: Text(
+                            text = "You have ${uncompletedTask}\npending tasks",
                             style = TextStyle(
                                 fontFamily = FontFamily(Font(R.font.readexpro)),
                                 fontSize = 18.sp,
                                 color = yellowColor
                             )
-                        )
+                        )) as Int
                     }
                 }
             }

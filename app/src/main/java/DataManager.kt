@@ -2,13 +2,13 @@ import com.google.gson.Gson
 import java.io.File
 import android.content.Context
 
-class DataManager(context: Context) {
+open class DataManager(context: Context) {
     private val file: File = File(context.filesDir, "totddata.json")
     private val gson = Gson()
     private var json: String = ""
 
 
-    fun saveInformation(data: MutableList<TasksGroup>): String {
+    open fun saveInformation(data: MutableList<TasksGroup>): String {
         try {
             val dataHolder = Data(data)
             json = gson.toJson(dataHolder)
