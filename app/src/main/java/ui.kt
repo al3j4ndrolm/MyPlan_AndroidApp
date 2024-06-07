@@ -1,6 +1,7 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,15 +11,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,28 +39,30 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
+class MainScreenUI(dataManager: DataManager) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
+    private val lightYellowColor = Color.hsl(36F, 1F, .84F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
     val dataManager = dataManager
-    val taskGroupLists = taskGroupLists
+
 
 
     @Composable
-    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
-        var showDialog by remember {
+    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit, startingValue: Boolean) {
+        var showAddTaskDialog by remember {
             mutableStateOf(false)
         }
 
         var showTasks by remember {
-            mutableStateOf(false)
+            mutableStateOf(startingValue)
         }
 
         var showDeleteGroup by remember {
@@ -67,6 +73,9 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
             mutableStateOf(250)
         }
 
+        if (showTasks){
+            containerSize = 350
+        }
 
         Box(
             modifier = Modifier
@@ -85,6 +94,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 Box(modifier = Modifier.padding(start = 8.dp)) {
                     Column {
                         if (!showTasks){
+                            containerSize = 250
                             Text(
                                 text = buildAnnotatedString {
                                     withStyle(style = SpanStyle(
@@ -104,25 +114,27 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                                         append(tasksGroupInstance.taskGroupNumber)
                                     }
                                 },style = TextStyle(
-                                    lineHeight = 36.sp, // Set line height here
+                                    lineHeight = 36.sp,
                                     fontFamily = fontFamily,
                                     fontSize = 35.sp),
                                 modifier = Modifier
                                     .pointerInput(Unit) {
                                         detectTapGestures(
                                             onLongPress = { showDeleteGroup = true },
-                                            onTap = { showTasks = !showTasks}
+                                            onTap = {
+                                                showTasks = !showTasks
+                                                tasksGroupInstance.setShowTask()
+                                            }
                                         )
                                     }
                             )
+                            dataManager.saveInformation(tasksGroup)
                         }
                     }
                 }
 
-                if(!showTasks){
-                    containerSize = 250
-                }
                 if (showTasks) {
+                    containerSize = 350
                     Text(
                         text = buildAnnotatedString {
                             withStyle(style = SpanStyle(
@@ -142,20 +154,23 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                                 append(tasksGroupInstance.taskGroupNumber)
                             }
                         },style = TextStyle(
-                            lineHeight = 36.sp, // Set line height here
+                            lineHeight = 36.sp,
                             fontFamily = fontFamily,
                             fontSize = 35.sp),
                         modifier = Modifier
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onLongPress = { showDeleteGroup = true },
-                                    onTap = { showTasks = !showTasks }
+                                    onTap = {
+                                        showTasks = !showTasks
+                                        tasksGroupInstance.setShowTask()
+                                    }
                                 )
                             }
                             .padding(start = 8.dp)
                     )
 
-                    containerSize = 350
+
                     for (task in tasksGroupInstance.taskList) {
                         taskElement(
                             task = task,
@@ -166,15 +181,17 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                     }
 
                     addNewTaskButton {
-                        showDialog = true
+                        showAddTaskDialog = true
                     }
-                    if (showDialog) {
+                    if (showAddTaskDialog) {
                         addNewTaskDialog(
                             tasksGroupInstance,
-                            onDismissRequest = { showDialog = false },
-                            tasksGroup = tasksGroup
+                            onDismissRequest = { showAddTaskDialog = false },
+                            tasksGroup = tasksGroup,
+                            updateUncompletedTask = updateUncompletedTask
                             )
                     }
+                    dataManager.saveInformation(tasksGroup)
                 }
 
                 if (showDeleteGroup) {
@@ -183,6 +200,7 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                         onClick = {
                             tasksGroup.remove(tasksGroupInstance)
                             dataManager.saveInformation(tasksGroup)
+                            updateUncompletedTask()
                         }
                     )
                 }
@@ -217,8 +235,10 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 Checkbox(
                     checked = status,
                     onCheckedChange = {
-                        status = task.setState(!task.getState())
+                        status = !status
+                        task.saveCheckState(status)
                         updateUncompletedTask()
+                        dataManager.saveInformation(tasksGroup)
                     },
                     modifier = Modifier
                         .alignByBaseline() // Explicitly align by baseline
@@ -241,14 +261,20 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 onClick = {
                     tasksGroupInstance.removeTask(task)
                     dataManager.saveInformation(tasksGroup)
-                }
+                },
+                updateUncompletedTask = { updateUncompletedTask() }
             )
         }
     }
 
     @Composable
     fun noTaskMessage() {
-        Text(text = "There's no task")
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            Text(text = "There's no task")
+        }
     }
 
     @Composable
@@ -289,8 +315,9 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
 
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>, saveData: () -> Unit) {
+    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>?, saveData: () -> Unit) {
         var text by remember {
             mutableStateOf("")
         }
@@ -299,38 +326,96 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
             mutableStateOf("")
         }
 
-        Dialog(onDismissRequest = { onDismissRequest() }) {
+        Dialog(
+            onDismissRequest = { onDismissRequest() }
+        ) {
             Box(
                 modifier = Modifier
-                    .background(Color.LightGray)
-                    .size(190.dp)
+                    .background(
+                        yellowColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .size(width = 290.dp, height = 230.dp)
             ) {
                 Column {
-                    Text(text = "Add new group")
+                    Text(
+                        text = "Add new group",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.readexpro)),
+                            fontSize = 20.sp,
+                            color = redWineColor
+                        )
+                    )
                     TextField(
                         value = text,
                         onValueChange = { newText -> text = newText },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightYellowColor
+                        ),
+                        label = { Text(text = "Class name") },
+                        placeholder = { Text(text = "\"Math\"") }
                     )
                     TextField(
                         value = number,
                         onValueChange = { newText -> number = newText },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightYellowColor
+                        ),
+                        label = { Text(text = "Class number") },
+                        placeholder = { Text(text = "\"1A\"") }
                     )
-                    Button(onClick = {
-                        tasksGroup.add(TasksGroup(text, number))
-                        saveData()
-                        onDismissRequest()
-                    }) {
-                        Text(text = "Save")
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                    ){
+                        Button(
+                            colors = ButtonDefaults.buttonColors(redWineColor),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    color = redWineColor,
+                                    shape = RoundedCornerShape(
+                                        bottomStart = 16.dp,
+                                        bottomEnd = 16.dp
+                                    )
+
+                                ),
+                            onClick = {
+                                if (tasksGroup != null) {
+                                    tasksGroup.add(TasksGroup(text, number))
+                                }
+                                saveData()
+                                onDismissRequest()
+                            }) {
+                            Text(text = "Save",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(
+                                    fontFamily = FontFamily(Font(R.font.readexpro)),
+                                    fontSize = 15.sp,
+                                    color = yellowColor
+                                )
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun addNewTaskDialog(tasksGroupInstance: TasksGroup, onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>) {
+    fun addNewTaskDialog(tasksGroupInstance: TasksGroup, onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
         var text by remember {
             mutableStateOf("")
         }
@@ -338,22 +423,69 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
-                    .background(Color.LightGray)
-                    .size(190.dp)
+                    .background(
+                        yellowColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .size(width = 290.dp, height = 170.dp)
             ) {
                 Column {
-                    Text(text = "Add new task")
+                    Text(
+                        text = "Add new task",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.readexpro)),
+                            fontSize = 20.sp,
+                            color = redWineColor
+                        )
+                    )
                     TextField(
                         value = text,
                         onValueChange = { newText -> text = newText },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightYellowColor
+                        ),
+                        label = { Text(text = "Task description") },
+                        placeholder = { Text(text = "\"Finish Lab 3 - 3D Modeling\"") }
                     )
-                    Button(onClick = {
-                        tasksGroupInstance.addNewTask(text)
-                        onDismissRequest()
-                        dataManager.saveInformation(tasksGroup)
-                    }) {
-                        Text(text = "Save")
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ){
+                        Button(
+                            onClick = {
+                            tasksGroupInstance.addNewTask(text)
+                            onDismissRequest()
+                            dataManager.saveInformation(tasksGroup)
+                            updateUncompletedTask() },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    color = redWineColor,
+                                    shape = RoundedCornerShape(
+                                        bottomStart = 16.dp,
+                                        bottomEnd = 16.dp
+                                    )
+
+                                ),
+                            colors = ButtonDefaults.buttonColors(redWineColor)
+                        ) {
+                            Text(text = "Save",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(
+                                    fontFamily = FontFamily(Font(R.font.readexpro)),
+                                    fontSize = 15.sp,
+                                    color = yellowColor
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -372,10 +504,6 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
 
     @Composable
     fun mainScreenHeader(uncompletedTask: Int) {
-
-        var uncompletedTask by remember {
-            mutableIntStateOf(uncompletedTask)
-        }
 
         Box(
             modifier = Modifier
@@ -417,13 +545,12 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
                 Column {
                     Box(
                         modifier = Modifier
-                            .padding(top = 22.dp, end = 25.dp)
+                            .padding(top = 15.dp, end = 25.dp)
                             .size(180.dp)
                     ) {
 
-                        uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
                         Text(
-                            text = "You have ${uncompletedTask}",
+                            text = "You have $uncompletedTask assignment left.",
                             style = TextStyle(
                                 fontFamily = FontFamily(Font(R.font.readexpro)),
                                 fontSize = 18.sp,
@@ -441,20 +568,71 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
-                    .background(Color.LightGray)
-                    .size(190.dp)
+                    .background(
+                        yellowColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .size(200.dp)
+
             ) {
-                Column {
-                    Text(text = "Are you sure you want to delete this group")
-                    Row {
-                        Button(onClick = { onDismissRequest() }) {
-                            Text(text = "Cancel")
-                        }
-                        Button(onClick = {
-                            onClick()
-                            onDismissRequest()
-                        }) {
-                            Text(text = "Delete")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.priority_high_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = "Exclamation",
+                        modifier = Modifier
+                            .padding(top = 10.dp),
+                        tint = redWineColor
+                    )
+                    Text(
+                        text = "Are you sure you want to delete this group?",
+                        modifier = Modifier.padding(6.dp),
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.readexpro)),
+                            fontSize = 20.sp,
+                            color = redWineColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomEnd
+                        ){
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier.background(redWineColor, shape = RoundedCornerShape(bottomStart = 16.dp))
+
+                            ){
+                                Button(
+                                    onClick = { onDismissRequest() },
+                                    modifier = Modifier.width(99.dp),
+                                    shape = CutCornerShape(topStart = 14.dp, topEnd = 0.dp, bottomStart = 14.dp, bottomEnd = 0.dp),
+                                    colors = ButtonDefaults.buttonColors(redWineColor)
+                                ) {
+                                    Text(text = "Cancel")
+                                }
+                            }
+                            Box(
+                                contentAlignment = Alignment.BottomEnd,
+                                modifier = Modifier
+                                    .background(redWineColor, shape = RoundedCornerShape(bottomEnd = 16.dp))
+                            ) {
+                                Button(
+                                    onClick = {
+                                        onClick()
+                                        onDismissRequest()
+                                    },
+                                    modifier = Modifier.width(99.dp),
+                                    shape = CutCornerShape(topStart = 0.dp, topEnd = 14.dp, bottomStart = 0.dp, bottomEnd = 14.dp),
+                                    colors = ButtonDefaults.buttonColors(redWineColor)
+                                ) {
+                                    Text(text = "Delete")
+                                }
+                            }
                         }
                     }
                 }
@@ -463,25 +641,75 @@ class MainScreenUI(dataManager: DataManager, taskGroupLists: TaskGroupLists) {
     }
 
     @Composable
-    fun deleteTaskDialog(onDismissRequest: () -> Unit, onClick: () -> Unit) {
+    fun deleteTaskDialog(onDismissRequest: () -> Unit, onClick: () -> Unit, updateUncompletedTask: () -> Unit) {
 
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
-                    .background(Color.LightGray)
-                    .size(190.dp)
+                    .background(
+                        yellowColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .size(200.dp)
+
             ) {
-                Column {
-                    Text(text = "Are you sure you want to delete this task")
-                    Row {
-                        Button(onClick = { onDismissRequest() }) {
-                            Text(text = "Cancel")
-                        }
-                        Button(onClick = {
-                            onClick()
-                            onDismissRequest()
-                        }) {
-                            Text(text = "Delete")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.priority_high_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = "Exclamation",
+                        modifier = Modifier
+                            .padding(top = 10.dp),
+                        tint = redWineColor
+                    )
+                    Text(text = "Are you sure you want to delete this task",
+                        modifier = Modifier.padding(6.dp),
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.readexpro)),
+                            fontSize = 20.sp,
+                            color = redWineColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomEnd
+                    ){
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier.background(redWineColor, shape = RoundedCornerShape(bottomStart = 16.dp))
+
+                            ){
+                                Button(
+                                    onClick = { onDismissRequest() },
+                                    modifier = Modifier.width(99.dp),
+                                    shape = CutCornerShape(topStart = 14.dp, topEnd = 0.dp, bottomStart = 14.dp, bottomEnd = 0.dp),
+                                    colors = ButtonDefaults.buttonColors(redWineColor)
+                                ) {
+                                    Text(text = "Cancel")
+                                }
+                            }
+                            Box(
+                                contentAlignment = Alignment.BottomEnd,
+                                modifier = Modifier
+                                    .background(redWineColor, shape = RoundedCornerShape(bottomEnd = 16.dp))
+                            ) {
+                                Button(
+                                    onClick = {
+                                        onClick()
+                                        onDismissRequest()
+                                        updateUncompletedTask()
+                                    },
+                                    modifier = Modifier.width(99.dp),
+                                    shape = CutCornerShape(topStart = 0.dp, topEnd = 14.dp, bottomStart = 0.dp, bottomEnd = 14.dp),
+                                    colors = ButtonDefaults.buttonColors(redWineColor)
+                                ) {
+                                    Text(text = "Delete")
+                                }
+                            }
                         }
                     }
                 }

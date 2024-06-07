@@ -14,8 +14,7 @@ class Task(taskDescription: String) {
         return this.check
     }
 
-    fun setState(boolean: Boolean): Boolean{
-        this.check = boolean
-        return boolean
+    fun saveCheckState(status: Boolean){
+        this.check = status
     }
 }

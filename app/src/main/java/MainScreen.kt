@@ -18,19 +18,18 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
 
     val dataManager = dataManager
     var groupsList = tasksGroups.toMutableStateList()
-    val taskGroupLists = TaskGroupLists(groupsList)
 
 
     @Composable
     fun Run(){
-        val ui = MainScreenUI(dataManager, taskGroupLists)
+        val ui = MainScreenUI(dataManager)
+
+        var uncompletedTasks by remember {
+            mutableIntStateOf(getNumberOfIncompleteTasks())
+        }
 
         var showDialog by remember {
         mutableStateOf(false)
-        }
-
-        var uncompletedTask by remember {
-            mutableIntStateOf(taskGroupLists.getNumberOfIncompleteTasks())
         }
 
         Box(modifier = Modifier
@@ -41,15 +40,15 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                 Column(modifier = Modifier.padding(top = 10.dp),
                     verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                    ui.mainScreenHeader(uncompletedTask)
+                    ui.mainScreenHeader(uncompletedTasks)
                     if (groupsList.size != 0 ){
                         for (taskGroup in groupsList){
                             ui.TaskGroupContainer(
                                 tasksGroupInstance = taskGroup,
                                 tasksGroup = groupsList,
                                 updateUncompletedTask = {
-                                    uncompletedTask = taskGroupLists.getNumberOfIncompleteTasks()
-                                }
+                                    uncompletedTasks = getNumberOfIncompleteTasks()},
+                                startingValue = taskGroup.showTasks
                             )
                         }
                     } else {
@@ -66,5 +65,18 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                 }
             }
         }
+    }
+
+    private fun getNumberOfIncompleteTasks(): Int {
+        var incompleteTasksCountKeeper = 0
+
+        for (taskGroup in groupsList){
+            for (task in taskGroup.taskList){
+                if (!task.getState()){
+                    incompleteTasksCountKeeper++
+                }
+            }
+        }
+        return incompleteTasksCountKeeper
     }
 }

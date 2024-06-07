@@ -1,11 +1,9 @@
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 
-data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
+data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String, var showTasks: Boolean = false) {
     var taskList = mutableStateListOf<Task>()
-
 
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName
@@ -22,7 +20,13 @@ data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String) {
 
     fun clearTaskGroup(){
         taskList.clear()
-
     }
 
+    fun getShowTask(): Boolean {
+        return this.showTasks
+    }
+
+    fun setShowTask(){
+        this.showTasks = !showTasks
+    }
 }
