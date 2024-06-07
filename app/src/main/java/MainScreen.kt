@@ -8,7 +8,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,9 +38,9 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
         ){
 
             Box(modifier = Modifier.fillMaxSize()) {
-                ui.mainScreenBackground()
+                ui.MainScreenBackground()
                 Column {
-                    ui.mainScreenHeader(uncompletedTasks)
+                    ui.MainScreenHeader(uncompletedTasks)
                     Column(modifier = Modifier
                         .padding(top = 10.dp)
                         .verticalScroll(rememberScrollState()),
@@ -63,9 +62,9 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                     }
                 }
 
-                ui.addNewGroupButton { showDialog = true }
+                ui.AddNewGroupButton { showDialog = true }
                 if (showDialog){
-                    ui.addNewTaskGroupDialog(
+                    ui.AddNewTaskGroupDialog(
                         onDismissRequest = {showDialog = false},
                         tasksGroup = groupsList,
                         saveData = {dataManager.saveInformation(groupsList)}
@@ -73,7 +72,7 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                 }
             }
             if (groupsList.size == 0){
-                ui.noTaskMessage()
+                ui.NoTaskMessage()
             }
         }
     }

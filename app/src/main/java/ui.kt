@@ -16,13 +16,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,24 +41,28 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
 
-class MainScreenUI(dataManager: DataManager) {
+class MainScreenUI(private val dataManager: DataManager) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val darkLightYellow = Color.hsl(36F, .54F, .71F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
+    private val lightRedWineColor = Color.hsl(36F, .36F, .48F)
     private val lightYellowColor = Color.hsl(36F, 1F, .84F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
-    val dataManager = dataManager
-
-
 
     @Composable
-    fun TaskGroupContainer(tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit, startingValue: Boolean) {
+    fun TaskGroupContainer(
+        tasksGroupInstance: TasksGroup,
+        tasksGroup: MutableList<TasksGroup>,
+        updateUncompletedTask: () -> Unit,
+        startingValue: Boolean
+    ) {
         var showAddTaskDialog by remember {
             mutableStateOf(false)
         }
@@ -71,10 +76,10 @@ class MainScreenUI(dataManager: DataManager) {
         }
 
         var containerSize by remember {
-            mutableStateOf(250)
+            mutableIntStateOf(250)
         }
 
-        if (showTasks){
+        if (showTasks) {
             containerSize = 350
         }
 
@@ -103,31 +108,35 @@ class MainScreenUI(dataManager: DataManager) {
             Column {
                 Box(modifier = Modifier.padding(start = 8.dp)) {
                     Column {
-                        if (!showTasks){
+                        if (!showTasks) {
                             containerSize = 250
                             Text(
                                 text = buildAnnotatedString {
-                                    withStyle(style = SpanStyle(
-                                        fontSize = 35.sp,
-                                        fontWeight = FontWeight.Light,
-                                        color = redWineColor
-                                    )
+                                    withStyle(
+                                        style = SpanStyle(
+                                            fontSize = 35.sp,
+                                            fontWeight = FontWeight.Light,
+                                            color = redWineColor
+                                        )
                                     ) {
                                         append(tasksGroupInstance.taskGroupName)
                                     }
                                     append("\n")
-                                    withStyle(style = SpanStyle(
-                                        fontSize = 35.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = redWineColor
-                                    )) {
+                                    withStyle(
+                                        style = SpanStyle(
+                                            fontSize = 35.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = redWineColor
+                                        )
+                                    ) {
                                         append(tasksGroupInstance.taskGroupNumber)
                                     }
                                 },
                                 style = TextStyle(
                                     lineHeight = 36.sp,
                                     fontFamily = fontFamily,
-                                    fontSize = 35.sp),
+                                    fontSize = 35.sp
+                                ),
                             )
                             dataManager.saveInformation(tasksGroup)
                         }
@@ -138,26 +147,30 @@ class MainScreenUI(dataManager: DataManager) {
                     containerSize = 350
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(
-                                fontSize = 35.sp,
-                                fontWeight = FontWeight.Light,
-                                color = redWineColor
-                            )
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 35.sp,
+                                    fontWeight = FontWeight.Light,
+                                    color = redWineColor
+                                )
                             ) {
                                 append(tasksGroupInstance.taskGroupName)
                             }
                             append(" ")
-                            withStyle(style = SpanStyle(
-                                fontSize = 35.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = redWineColor
-                            )) {
+                            withStyle(
+                                style = SpanStyle(
+                                    fontSize = 35.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = redWineColor
+                                )
+                            ) {
                                 append(tasksGroupInstance.taskGroupNumber)
                             }
-                        },style = TextStyle(
+                        }, style = TextStyle(
                             lineHeight = 36.sp,
                             fontFamily = fontFamily,
-                            fontSize = 35.sp),
+                            fontSize = 35.sp
+                        ),
                         modifier = Modifier
                             .pointerInput(Unit) {
                                 detectTapGestures(
@@ -173,7 +186,7 @@ class MainScreenUI(dataManager: DataManager) {
 
 
                     for (task in tasksGroupInstance.taskList) {
-                        taskElement(
+                        TaskElement(
                             task = task,
                             tasksGroupInstance = tasksGroupInstance,
                             tasksGroup = tasksGroup,
@@ -181,22 +194,22 @@ class MainScreenUI(dataManager: DataManager) {
                         )
                     }
 
-                    addNewTaskButton {
+                    AddNewTaskButton {
                         showAddTaskDialog = true
                     }
                     if (showAddTaskDialog) {
-                        addNewTaskDialog(
+                        AddNewTaskDialog(
                             tasksGroupInstance,
                             onDismissRequest = { showAddTaskDialog = false },
                             tasksGroup = tasksGroup,
                             updateUncompletedTask = updateUncompletedTask
-                            )
+                        )
                     }
                     dataManager.saveInformation(tasksGroup)
                 }
 
                 if (showDeleteGroup) {
-                    deleteGroupDialog(
+                    DeleteGroupDialog(
                         onDismissRequest = { showDeleteGroup = false },
                         onClick = {
                             tasksGroup.remove(tasksGroupInstance)
@@ -210,7 +223,12 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun taskElement(task: Task, tasksGroupInstance: TasksGroup, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
+    fun TaskElement(
+        task: Task,
+        tasksGroupInstance: TasksGroup,
+        tasksGroup: MutableList<TasksGroup>,
+        updateUncompletedTask: () -> Unit
+    ) {
 
         var showDeleteTaskDialog by remember {
             mutableStateOf(false)
@@ -240,34 +258,63 @@ class MainScreenUI(dataManager: DataManager) {
                         updateUncompletedTask()
                         dataManager.saveInformation(tasksGroup)
                     },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = redWineColor,
+                        checkmarkColor = Color.White,
+                    ),
                     modifier = Modifier
                         .alignByBaseline()
                         .size(24.dp)
                         .padding(start = 12.dp)
                 )
 
-                Text(
-                    text = task.getTaskDescription(),
-                    modifier = Modifier
-                        .alignByBaseline()
-                        .padding(start = 8.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = { showDeleteTaskDialog = true },
-                                onTap = {
-                                    status = !status
-                                    task.saveCheckState(status)
-                                    updateUncompletedTask()
-                                    dataManager.saveInformation(tasksGroup)
-                                }
-                            )
-                        }
-                )
+                if (status){
+                    Text(
+                        text = task.getTaskDescription(),
+                        color = lightYellowColor,
+                        style = TextStyle(
+                            textDecoration = TextDecoration.LineThrough,
+                            fontSize = 16.9.sp
+                        ),
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .padding(start = 8.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = { showDeleteTaskDialog = true },
+                                    onTap = {
+                                        status = !status
+                                        task.saveCheckState(status)
+                                        updateUncompletedTask()
+                                        dataManager.saveInformation(tasksGroup)
+                                    }
+                                )
+                            }
+                    )
+                } else {
+                    Text(
+                        text = task.getTaskDescription(),
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .padding(start = 8.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = { showDeleteTaskDialog = true },
+                                    onTap = {
+                                        status = !status
+                                        task.saveCheckState(status)
+                                        updateUncompletedTask()
+                                        dataManager.saveInformation(tasksGroup)
+                                    }
+                                )
+                            }
+                    )
+                }
             }
         }
 
         if (showDeleteTaskDialog) {
-            deleteTaskDialog(
+            DeleteTaskDialog(
                 onDismissRequest = { showDeleteTaskDialog = false },
                 onClick = {
                     tasksGroupInstance.removeTask(task)
@@ -279,17 +326,18 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun noTaskMessage() {
+    fun NoTaskMessage() {
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     modifier = Modifier.size(80.dp),
                     tint = redWineColor,
                     painter = painterResource(id = R.drawable.error_24dp_fill0_wght400_grad0_opsz24),
-                    contentDescription = "No task")
+                    contentDescription = "No task"
+                )
 
                 Text(
                     text = "Create a group to start adding tasks",
@@ -302,10 +350,10 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun addNewGroupButton(onClick: () -> Unit) {
+    fun AddNewGroupButton(onClick: () -> Unit) {
         Box(modifier = Modifier.fillMaxSize()) {
             Button(
-                onClick = {onClick() },
+                onClick = { onClick() },
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.BottomEnd),
@@ -320,9 +368,10 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun addNewTaskButton(onClick: () -> Unit) {
-        Box(modifier = Modifier
-            .fillMaxWidth(),
+    fun AddNewTaskButton(onClick: () -> Unit) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(),
             contentAlignment = Alignment.BottomEnd
         ) {
             Button(
@@ -339,9 +388,12 @@ class MainScreenUI(dataManager: DataManager) {
 
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun addNewTaskGroupDialog(onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>?, saveData: () -> Unit) {
+    fun AddNewTaskGroupDialog(
+        onDismissRequest: () -> Unit,
+        tasksGroup: MutableList<TasksGroup>?,
+        saveData: () -> Unit
+    ) {
         var text by remember {
             mutableStateOf("")
         }
@@ -366,21 +418,17 @@ class MainScreenUI(dataManager: DataManager) {
             mutableStateOf(false)
         }
 
-        fun validateInput(value: String, number: String): Boolean{
-            if (value.isEmpty()){
+        fun validateGroupInput(value: String, number: String): Boolean {
+            if (value.isEmpty()) {
                 isInvalidInput = true
                 return true
-            }
-            else if (value.length > 8){
+            } else if (value.length > 8) {
                 isInvalidInput = true
                 return true
-            }
-            else if (tasksGroup != null) {
-                if (tasksGroup.isNotEmpty()) {
-                    if (tasksGroup.contains(TasksGroup(value, number))) {
-                        isDuplicateInput = true
-                        return true
-                    }
+            } else if (tasksGroup != null) {
+                if (tasksGroup.any { it.taskGroupName == value && it.taskGroupNumber == number }) {
+                    isDuplicateInput = true
+                    return true
                 }
             }
             isInvalidInput = false
@@ -412,20 +460,25 @@ class MainScreenUI(dataManager: DataManager) {
                     )
                     TextField(
                         value = text,
-                        onValueChange = {
-                            newText -> text = newText
-                                        },
+                        onValueChange = { newText ->
+                            text = newText
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
                         singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = lightYellowColor
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = lightYellowColor,
+                            unfocusedContainerColor = lightYellowColor,
+                            disabledContainerColor = lightYellowColor,
                         ),
                         label = { Text(text = "Class name") },
-                        placeholder = { Text(
-                            text = "Math",
-                            color = darkLightYellow) }
+                        placeholder = {
+                            Text(
+                                text = "Math",
+                                color = darkLightYellow
+                            )
+                        }
                     )
                     TextField(
                         value = number,
@@ -434,74 +487,59 @@ class MainScreenUI(dataManager: DataManager) {
                             .fillMaxWidth()
                             .padding(4.dp),
                         singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = lightYellowColor
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = lightYellowColor,
+                            unfocusedContainerColor = lightYellowColor,
+                            disabledContainerColor = lightYellowColor,
                         ),
                         label = { Text(text = "Class number") },
                         placeholder = {
-                            Text(text = "1A",
-                            color = darkLightYellow) }
-                    )
-                    if (showInputError){
-                        Text(
-                            text = "Hey! The class can't be empty or bigger than 8 letters",
-                            color = redWineColor,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = fontFamily,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp, start = 4.dp, end = 2.dp)
-                        )
-                    }
-                    else if (showDuplicateError) {
-                        showInputError = false
-                        Text(
-                            text = "Careful! This group already exist",
-                            color = redWineColor,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = fontFamily,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp, start = 4.dp, end = 2.dp)
-                        )
-                    }
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                    ){
-                        Button(
-                            colors = ButtonDefaults.buttonColors(redWineColor),
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .background(
-                                    color = redWineColor,
-                                    shape = RoundedCornerShape(
-                                        bottomStart = 16.dp,
-                                        bottomEnd = 16.dp
-                                    )
-
-                                ),
-                            onClick = {
-                                validateInput(text, number)
-                                if (isInvalidInput){
-                                    showInputError = true
-                                }
-                                else if (isDuplicateInput){
-                                    showDuplicateError = true
-                                }
-                                else {
-                                    tasksGroup?.add(TasksGroup(text, number))
-                                    saveData()
-                                    onDismissRequest()
-                                }
-                            }) {
-                            Text(text = "Save",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    fontFamily = FontFamily(Font(R.font.readexpro)),
-                                    fontSize = 15.sp,
-                                    color = yellowColor
-                                )
+                            Text(
+                                text = "1A",
+                                color = darkLightYellow
                             )
+                        }
+                    )
+                    if (showInputError) {
+                        Text(
+                            text = "Hey! The class can't be empty or bigger than 8 letters.",
+                            color = redWineColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.padding(
+                                top = 4.dp,
+                                bottom = 6.dp,
+                                start = 4.dp,
+                                end = 2.dp
+                            )
+                        )
+                    } else if (showDuplicateError) {
+                        Text(
+                            text = "Careful! This group already exist.",
+                            color = redWineColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.padding(
+                                top = 4.dp,
+                                bottom = 6.dp,
+                                start = 4.dp,
+                                end = 2.dp
+                            )
+                        )
+                    }
+
+                    CreateNewItemConfirmBox{
+                        validateGroupInput(text, number)
+                        if (isInvalidInput) {
+                            showInputError = true
+                        } else if (isDuplicateInput) {
+                            showDuplicateError = true
+                        } else {
+                            tasksGroup?.add(TasksGroup(text, number))
+                            saveData()
+                            onDismissRequest()
                         }
                     }
                 }
@@ -509,11 +547,23 @@ class MainScreenUI(dataManager: DataManager) {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun addNewTaskDialog(tasksGroupInstance: TasksGroup, onDismissRequest: () -> Unit, tasksGroup: MutableList<TasksGroup>, updateUncompletedTask: () -> Unit) {
+    fun AddNewTaskDialog(
+        tasksGroupInstance: TasksGroup,
+        onDismissRequest: () -> Unit,
+        tasksGroup: MutableList<TasksGroup>,
+        updateUncompletedTask: () -> Unit
+    ) {
         var text by remember {
             mutableStateOf("")
+        }
+
+        var showInvalidInputError by remember {
+            mutableStateOf(false)
+        }
+
+        fun validateTaskInput(value: String): Boolean {
+            return value.isEmpty()
         }
 
         Dialog(onDismissRequest = { onDismissRequest() }) {
@@ -543,47 +593,43 @@ class MainScreenUI(dataManager: DataManager) {
                             .fillMaxWidth()
                             .padding(4.dp),
                         singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = lightYellowColor
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = lightYellowColor,
+                            unfocusedContainerColor = lightYellowColor,
+                            disabledContainerColor = lightYellowColor,
                         ),
                         label = { Text(text = "Task description") },
-                        placeholder = { Text(
-                            text = "Finish Lab 3 - 3D Modeling",
-                            color = darkLightYellow)
+                        placeholder = {
+                            Text(
+                                text = "Finish Lab 3 - 3D Modeling",
+                                color = darkLightYellow
+                            )
                         }
                     )
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.BottomCenter
-                    ){
-                        Button(
-                            onClick = {
+                    if (showInvalidInputError){
+                        Text(
+                            text = "Oh, the task description can't be empty.",
+                            color = redWineColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.padding(
+                                top = 4.dp,
+                                bottom = 6.dp,
+                                start = 4.dp,
+                                end = 2.dp
+                            )
+                        )
+                    }
+
+                    CreateNewItemConfirmBox{
+                        if (validateTaskInput(text)){
+                            showInvalidInputError = true
+                        } else {
                             tasksGroupInstance.addNewTask(text)
                             onDismissRequest()
                             dataManager.saveInformation(tasksGroup)
-                            updateUncompletedTask() },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .background(
-                                    color = redWineColor,
-                                    shape = RoundedCornerShape(
-                                        bottomStart = 16.dp,
-                                        bottomEnd = 16.dp
-                                    )
-
-                                ),
-                            colors = ButtonDefaults.buttonColors(redWineColor)
-                        ) {
-                            Text(text = "Save",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    fontFamily = FontFamily(Font(R.font.readexpro)),
-                                    fontSize = 15.sp,
-                                    color = yellowColor
-                                )
-                            )
+                            updateUncompletedTask()
                         }
                     }
                 }
@@ -592,7 +638,44 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun mainScreenBackground() {
+    private fun CreateNewItemConfirmBox(
+        onClickSave: () -> Unit
+    ){
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Button(
+                onClick = onClickSave,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        color = redWineColor,
+                        shape = RoundedCornerShape(
+                            bottomStart = 16.dp,
+                            bottomEnd = 16.dp
+                        )
+
+                    ),
+                colors = ButtonDefaults.buttonColors(redWineColor)
+            ) {
+                Text(
+                    text = "Save",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.readexpro)),
+                        fontSize = 15.sp,
+                        color = yellowColor
+                    )
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun MainScreenBackground() {
         Image(
             painter = painterResource(R.drawable.wallpaper),
             contentDescription = "Wallpaper",
@@ -602,7 +685,7 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun mainScreenHeader(uncompletedTask: Int) {
+    fun MainScreenHeader(uncompletedTask: Int) {
 
         Box(
             modifier = Modifier
@@ -648,14 +731,25 @@ class MainScreenUI(dataManager: DataManager) {
                             .size(180.dp)
                     ) {
 
-                        Text(
-                            text = "You have $uncompletedTask assignment left.",
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.readexpro)),
-                                fontSize = 18.sp,
-                                color = yellowColor
+                        if (uncompletedTask > 1){
+                            Text(
+                                text = "You have $uncompletedTask assignments left.",
+                                style = TextStyle(
+                                    fontFamily = FontFamily(Font(R.font.readexpro)),
+                                    fontSize = 18.sp,
+                                    color = yellowColor
+                                )
                             )
-                        )
+                        } else {
+                            Text(
+                                text = "You have $uncompletedTask assignment left.",
+                                style = TextStyle(
+                                    fontFamily = FontFamily(Font(R.font.readexpro)),
+                                    fontSize = 18.sp,
+                                    color = yellowColor
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -663,7 +757,7 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun deleteGroupDialog(onDismissRequest: () -> Unit, onClick: () -> Unit) {
+    fun DeleteGroupDialog(onDismissRequest: () -> Unit, onClick: () -> Unit) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
                 modifier = Modifier
@@ -697,19 +791,27 @@ class MainScreenUI(dataManager: DataManager) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.BottomEnd
-                        ){
+                    ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
-                                modifier = Modifier.background(redWineColor, shape = RoundedCornerShape(bottomStart = 16.dp))
+                                modifier = Modifier.background(
+                                    redWineColor,
+                                    shape = RoundedCornerShape(bottomStart = 16.dp)
+                                )
 
-                            ){
+                            ) {
                                 Button(
                                     onClick = { onDismissRequest() },
                                     modifier = Modifier.width(99.dp),
-                                    shape = CutCornerShape(topStart = 14.dp, topEnd = 0.dp, bottomStart = 14.dp, bottomEnd = 0.dp),
+                                    shape = CutCornerShape(
+                                        topStart = 14.dp,
+                                        topEnd = 0.dp,
+                                        bottomStart = 14.dp,
+                                        bottomEnd = 0.dp
+                                    ),
                                     colors = ButtonDefaults.buttonColors(redWineColor)
                                 ) {
                                     Text(text = "Cancel")
@@ -718,7 +820,10 @@ class MainScreenUI(dataManager: DataManager) {
                             Box(
                                 contentAlignment = Alignment.BottomEnd,
                                 modifier = Modifier
-                                    .background(redWineColor, shape = RoundedCornerShape(bottomEnd = 16.dp))
+                                    .background(
+                                        redWineColor,
+                                        shape = RoundedCornerShape(bottomEnd = 16.dp)
+                                    )
                             ) {
                                 Button(
                                     onClick = {
@@ -726,7 +831,12 @@ class MainScreenUI(dataManager: DataManager) {
                                         onDismissRequest()
                                     },
                                     modifier = Modifier.width(99.dp),
-                                    shape = CutCornerShape(topStart = 0.dp, topEnd = 14.dp, bottomStart = 0.dp, bottomEnd = 14.dp),
+                                    shape = CutCornerShape(
+                                        topStart = 0.dp,
+                                        topEnd = 14.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 14.dp
+                                    ),
                                     colors = ButtonDefaults.buttonColors(redWineColor)
                                 ) {
                                     Text(text = "Delete")
@@ -740,7 +850,11 @@ class MainScreenUI(dataManager: DataManager) {
     }
 
     @Composable
-    fun deleteTaskDialog(onDismissRequest: () -> Unit, onClick: () -> Unit, updateUncompletedTask: () -> Unit) {
+    fun DeleteTaskDialog(
+        onDismissRequest: () -> Unit,
+        onClick: () -> Unit,
+        updateUncompletedTask: () -> Unit
+    ) {
 
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Box(
@@ -760,7 +874,8 @@ class MainScreenUI(dataManager: DataManager) {
                             .padding(top = 10.dp),
                         tint = redWineColor
                     )
-                    Text(text = "Are you sure you want to delete this task",
+                    Text(
+                        text = "Are you sure you want to delete this task",
                         modifier = Modifier.padding(6.dp),
                         textAlign = TextAlign.Center,
                         style = TextStyle(
@@ -773,19 +888,27 @@ class MainScreenUI(dataManager: DataManager) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.BottomEnd
-                    ){
+                    ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
-                                modifier = Modifier.background(redWineColor, shape = RoundedCornerShape(bottomStart = 16.dp))
+                                modifier = Modifier.background(
+                                    redWineColor,
+                                    shape = RoundedCornerShape(bottomStart = 16.dp)
+                                )
 
-                            ){
+                            ) {
                                 Button(
                                     onClick = { onDismissRequest() },
                                     modifier = Modifier.width(99.dp),
-                                    shape = CutCornerShape(topStart = 14.dp, topEnd = 0.dp, bottomStart = 14.dp, bottomEnd = 0.dp),
+                                    shape = CutCornerShape(
+                                        topStart = 14.dp,
+                                        topEnd = 0.dp,
+                                        bottomStart = 14.dp,
+                                        bottomEnd = 0.dp
+                                    ),
                                     colors = ButtonDefaults.buttonColors(redWineColor)
                                 ) {
                                     Text(text = "Cancel")
@@ -794,7 +917,10 @@ class MainScreenUI(dataManager: DataManager) {
                             Box(
                                 contentAlignment = Alignment.BottomEnd,
                                 modifier = Modifier
-                                    .background(redWineColor, shape = RoundedCornerShape(bottomEnd = 16.dp))
+                                    .background(
+                                        redWineColor,
+                                        shape = RoundedCornerShape(bottomEnd = 16.dp)
+                                    )
                             ) {
                                 Button(
                                     onClick = {
@@ -803,7 +929,12 @@ class MainScreenUI(dataManager: DataManager) {
                                         updateUncompletedTask()
                                     },
                                     modifier = Modifier.width(99.dp),
-                                    shape = CutCornerShape(topStart = 0.dp, topEnd = 14.dp, bottomStart = 0.dp, bottomEnd = 14.dp),
+                                    shape = CutCornerShape(
+                                        topStart = 0.dp,
+                                        topEnd = 14.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 14.dp
+                                    ),
                                     colors = ButtonDefaults.buttonColors(redWineColor)
                                 ) {
                                     Text(text = "Delete")
