@@ -3,6 +3,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,27 +37,33 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
         Box(modifier = Modifier
             .fillMaxSize()
         ){
+
             Box(modifier = Modifier.fillMaxSize()) {
                 ui.mainScreenBackground()
-                Column(modifier = Modifier.padding(top = 10.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                    ) {
+                Column {
                     ui.mainScreenHeader(uncompletedTasks)
-                    if (groupsList.size != 0 ){
-                        for (taskGroup in groupsList){
-                            ui.TaskGroupContainer(
-                                tasksGroupInstance = taskGroup,
-                                tasksGroup = groupsList,
-                                updateUncompletedTask = {
-                                    uncompletedTasks = getNumberOfIncompleteTasks()},
-                                startingValue = taskGroup.showTasks
-                            )
+                    Column(modifier = Modifier
+                        .padding(top = 10.dp)
+                        .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        if (groupsList.size != 0 ){
+                            for (taskGroup in groupsList){
+                                ui.TaskGroupContainer(
+                                    tasksGroupInstance = taskGroup,
+                                    tasksGroup = groupsList,
+                                    updateUncompletedTask = {
+                                        uncompletedTasks = getNumberOfIncompleteTasks()},
+                                    startingValue = taskGroup.showTasks
+                                )
+                            }
                         }
-                    } else {
-                        ui.noTaskMessage()
+
                     }
-                    ui.addNewGroupButton { showDialog = true }
                 }
+
+                ui.addNewGroupButton { showDialog = true }
                 if (showDialog){
                     ui.addNewTaskGroupDialog(
                         onDismissRequest = {showDialog = false},
@@ -63,6 +71,9 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, dataManager: DataManager)
                         saveData = {dataManager.saveInformation(groupsList)}
                     )
                 }
+            }
+            if (groupsList.size == 0){
+                ui.noTaskMessage()
             }
         }
     }

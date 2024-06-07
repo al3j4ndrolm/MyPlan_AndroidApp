@@ -48,6 +48,7 @@ import com.example.totd_final.R
 
 class MainScreenUI(dataManager: DataManager) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
+    private val darkLightYellow = Color.hsl(36F, .54F, .71F)
     private val redWineColor = Color.hsl(0F, .76F, .29F)
     private val lightYellowColor = Color.hsl(36F, 1F, .84F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
@@ -88,6 +89,15 @@ class MainScreenUI(dataManager: DataManager) {
                     )
                 )
                 .width(containerSize.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = { showDeleteGroup = true },
+                        onTap = {
+                            showTasks = !showTasks
+                            tasksGroupInstance.setShowTask()
+                        }
+                    )
+                }
 
         ) {
             Column {
@@ -113,20 +123,11 @@ class MainScreenUI(dataManager: DataManager) {
                                     )) {
                                         append(tasksGroupInstance.taskGroupNumber)
                                     }
-                                },style = TextStyle(
+                                },
+                                style = TextStyle(
                                     lineHeight = 36.sp,
                                     fontFamily = fontFamily,
                                     fontSize = 35.sp),
-                                modifier = Modifier
-                                    .pointerInput(Unit) {
-                                        detectTapGestures(
-                                            onLongPress = { showDeleteGroup = true },
-                                            onTap = {
-                                                showTasks = !showTasks
-                                                tasksGroupInstance.setShowTask()
-                                            }
-                                        )
-                                    }
                             )
                             dataManager.saveInformation(tasksGroup)
                         }
@@ -221,7 +222,6 @@ class MainScreenUI(dataManager: DataManager) {
 
         Box(
             modifier = Modifier
-                .width(330.dp)
                 .background(color = yellowColor)
                 .pointerInput(Unit) {
                     detectTapGestures(onLongPress = { showDeleteTaskDialog = true })
@@ -241,16 +241,24 @@ class MainScreenUI(dataManager: DataManager) {
                         dataManager.saveInformation(tasksGroup)
                     },
                     modifier = Modifier
-                        .alignByBaseline() // Explicitly align by baseline
-                        .size(24.dp) // Specify a fixed size for consistent dimensions
+                        .alignByBaseline()
+                        .size(24.dp)
                         .padding(start = 12.dp)
                 )
 
                 Text(
                     text = task.getTaskDescription(),
                     modifier = Modifier
-                        .alignByBaseline() // Align text by its first baseline
+                        .alignByBaseline()
                         .padding(start = 8.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {showDeleteTaskDialog = true},
+                                onTap = {
+                                    status = !status
+                                }
+                            )
+                        }
                 )
             }
         }
@@ -273,7 +281,20 @@ class MainScreenUI(dataManager: DataManager) {
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ){
-            Text(text = "There's no task")
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    modifier = Modifier.size(80.dp),
+                    tint = redWineColor,
+                    painter = painterResource(id = R.drawable.error_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = "No task")
+
+                Text(
+                    text = "Create a group to start adding tasks",
+                    color = redWineColor,
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 
@@ -285,11 +306,11 @@ class MainScreenUI(dataManager: DataManager) {
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.BottomEnd),
-                colors = ButtonDefaults.buttonColors(yellowColor)
+                colors = ButtonDefaults.buttonColors(redWineColor)
             ) {
                 Text(
                     text = "Add new group",
-                    color = redWineColor
+                    color = yellowColor
                 )
             }
         }
@@ -359,7 +380,9 @@ class MainScreenUI(dataManager: DataManager) {
                             containerColor = lightYellowColor
                         ),
                         label = { Text(text = "Class name") },
-                        placeholder = { Text(text = "\"Math\"") }
+                        placeholder = { Text(
+                            text = "Math",
+                            color = darkLightYellow) }
                     )
                     TextField(
                         value = number,
@@ -372,7 +395,9 @@ class MainScreenUI(dataManager: DataManager) {
                             containerColor = lightYellowColor
                         ),
                         label = { Text(text = "Class number") },
-                        placeholder = { Text(text = "\"1A\"") }
+                        placeholder = {
+                            Text(text = "1A",
+                            color = darkLightYellow) }
                     )
                     Box(modifier = Modifier
                         .fillMaxSize()
@@ -451,7 +476,10 @@ class MainScreenUI(dataManager: DataManager) {
                             containerColor = lightYellowColor
                         ),
                         label = { Text(text = "Task description") },
-                        placeholder = { Text(text = "\"Finish Lab 3 - 3D Modeling\"") }
+                        placeholder = { Text(
+                            text = "Finish Lab 3 - 3D Modeling",
+                            color = darkLightYellow)
+                        }
                     )
                     Box(
                         Modifier.fillMaxSize(),
