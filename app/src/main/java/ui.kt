@@ -253,9 +253,12 @@ class MainScreenUI(dataManager: DataManager) {
                         .padding(start = 8.dp)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onLongPress = {showDeleteTaskDialog = true},
+                                onLongPress = { showDeleteTaskDialog = true },
                                 onTap = {
                                     status = !status
+                                    task.saveCheckState(status)
+                                    updateUncompletedTask()
+                                    dataManager.saveInformation(tasksGroup)
                                 }
                             )
                         }
@@ -347,6 +350,44 @@ class MainScreenUI(dataManager: DataManager) {
             mutableStateOf("")
         }
 
+        var isInvalidInput by remember {
+            mutableStateOf(false)
+        }
+
+        var isDuplicateInput by remember {
+            mutableStateOf(false)
+        }
+
+        var showInputError by remember {
+            mutableStateOf(false)
+        }
+
+        var showDuplicateError by remember {
+            mutableStateOf(false)
+        }
+
+        fun validateInput(value: String, number: String): Boolean{
+            if (value.isEmpty()){
+                isInvalidInput = true
+                return true
+            }
+            else if (value.length > 8){
+                isInvalidInput = true
+                return true
+            }
+            else if (tasksGroup != null) {
+                if (tasksGroup.isNotEmpty()) {
+                    if (tasksGroup.contains(TasksGroup(value, number))) {
+                        isDuplicateInput = true
+                        return true
+                    }
+                }
+            }
+            isInvalidInput = false
+            isDuplicateInput = false
+            return false
+        }
+
         Dialog(
             onDismissRequest = { onDismissRequest() }
         ) {
@@ -356,7 +397,7 @@ class MainScreenUI(dataManager: DataManager) {
                         yellowColor,
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .size(width = 290.dp, height = 230.dp)
+                    .size(width = 290.dp, height = 260.dp)
             ) {
                 Column {
                     Text(
@@ -371,7 +412,9 @@ class MainScreenUI(dataManager: DataManager) {
                     )
                     TextField(
                         value = text,
-                        onValueChange = { newText -> text = newText },
+                        onValueChange = {
+                            newText -> text = newText
+                                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
@@ -399,6 +442,27 @@ class MainScreenUI(dataManager: DataManager) {
                             Text(text = "1A",
                             color = darkLightYellow) }
                     )
+                    if (showInputError){
+                        Text(
+                            text = "Hey! The class can't be empty or bigger than 8 letters",
+                            color = redWineColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp, start = 4.dp, end = 2.dp)
+                        )
+                    }
+                    else if (showDuplicateError) {
+                        showInputError = false
+                        Text(
+                            text = "Careful! This group already exist",
+                            color = redWineColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp, start = 4.dp, end = 2.dp)
+                        )
+                    }
                     Box(modifier = Modifier
                         .fillMaxSize()
                     ){
@@ -416,11 +480,18 @@ class MainScreenUI(dataManager: DataManager) {
 
                                 ),
                             onClick = {
-                                if (tasksGroup != null) {
-                                    tasksGroup.add(TasksGroup(text, number))
+                                validateInput(text, number)
+                                if (isInvalidInput){
+                                    showInputError = true
                                 }
-                                saveData()
-                                onDismissRequest()
+                                else if (isDuplicateInput){
+                                    showDuplicateError = true
+                                }
+                                else {
+                                    tasksGroup?.add(TasksGroup(text, number))
+                                    saveData()
+                                    onDismissRequest()
+                                }
                             }) {
                             Text(text = "Save",
                                 modifier = Modifier.fillMaxWidth(),
