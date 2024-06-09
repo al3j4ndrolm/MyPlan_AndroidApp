@@ -1,3 +1,5 @@
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -29,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
@@ -39,6 +42,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -47,12 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.totd_final.R
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class MainScreenUI(private val dataManager: DataManager) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val darkLightYellow = Color.hsl(36F, .54F, .71F)
-    private val redWineColor = Color.hsl(0F, .76F, .29F)
-    private val lightRedWineColor = Color.hsl(36F, .36F, .48F)
+    private val redWineColor = Color.hsl(354F, .95F, .22F)
+    private val lightRedWineColor = Color.hsl(354F, .58F, .37F)
     private val lightYellowColor = Color.hsl(36F, 1F, .84F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
 
@@ -86,8 +92,17 @@ class MainScreenUI(private val dataManager: DataManager) {
         Box(
             modifier = Modifier
                 .padding(vertical = 8.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(
+                        topEnd = 12.dp,
+                        bottomEnd = 12.dp
+                    ),
+                    ambientColor = Color.Gray,
+                    spotColor = Color.Red
+                )
                 .background(
-                    color = yellowColor,
+                    color = Color.White,
                     shape = RoundedCornerShape(
                         topEnd = 12.dp,
                         bottomEnd = 12.dp
@@ -110,34 +125,39 @@ class MainScreenUI(private val dataManager: DataManager) {
                     Column {
                         if (!showTasks) {
                             containerSize = 250
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(
-                                        style = SpanStyle(
-                                            fontSize = 35.sp,
-                                            fontWeight = FontWeight.Light,
-                                            color = redWineColor
-                                        )
-                                    ) {
-                                        append(tasksGroupInstance.taskGroupName)
-                                    }
-                                    append("\n")
-                                    withStyle(
-                                        style = SpanStyle(
-                                            fontSize = 35.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = redWineColor
-                                        )
-                                    ) {
-                                        append(tasksGroupInstance.taskGroupNumber)
-                                    }
-                                },
-                                style = TextStyle(
-                                    lineHeight = 36.sp,
-                                    fontFamily = fontFamily,
-                                    fontSize = 35.sp
-                                ),
-                            )
+                            Row {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(
+                                            style = SpanStyle(
+                                                fontSize = 35.sp,
+                                                fontWeight = FontWeight.Light,
+                                                color = redWineColor
+                                            )
+                                        ) {
+                                            append(tasksGroupInstance.taskGroupName)
+                                        }
+                                        append("\n")
+                                        withStyle(
+                                            style = SpanStyle(
+                                                fontSize = 35.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = redWineColor
+                                            )
+                                        ) {
+                                            append(tasksGroupInstance.taskGroupNumber)
+                                        }
+                                    },
+                                    style = TextStyle(
+                                        lineHeight = 36.sp,
+                                        fontFamily = fontFamily,
+                                        fontSize = 35.sp
+                                    ),
+                                )
+                                if (tasksGroupInstance.taskList.size == 0){
+                                    exclamationSignIcon()
+                                }
+                            }
                             dataManager.saveInformation(tasksGroup)
                         }
                     }
@@ -194,6 +214,19 @@ class MainScreenUI(private val dataManager: DataManager) {
                         )
                     }
 
+                    if (tasksGroupInstance.taskList.size == 0){
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center){
+                            Text(
+                                text = "Is empty here! Press \"Add new task\".",
+                                fontFamily = fontFamily,
+                                fontStyle = FontStyle.Italic,
+                                color = Color.LightGray
+                            )
+                        }
+                    }
+
                     AddNewTaskButton {
                         showAddTaskDialog = true
                     }
@@ -223,6 +256,24 @@ class MainScreenUI(private val dataManager: DataManager) {
     }
 
     @Composable
+    fun exclamationSignIcon(){
+        Box(modifier = Modifier
+            .padding(top = 4.dp, start = 4.dp)
+            .size(20.dp)
+            .background(redWineColor, shape = RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(
+                    id = R.drawable.priority_high_24dp_fill0_wght400_grad0_opsz24),
+                contentDescription = "Exclamation",
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
+
+    @Composable
     fun TaskElement(
         task: Task,
         tasksGroupInstance: TasksGroup,
@@ -240,7 +291,7 @@ class MainScreenUI(private val dataManager: DataManager) {
 
         Box(
             modifier = Modifier
-                .background(color = yellowColor)
+                .background(color = Color.White)
                 .pointerInput(Unit) {
                     detectTapGestures(onLongPress = { showDeleteTaskDialog = true })
                 }
@@ -271,7 +322,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                 if (status){
                     Text(
                         text = task.getTaskDescription(),
-                        color = lightYellowColor,
+                        color = lightRedWineColor,
                         style = TextStyle(
                             textDecoration = TextDecoration.LineThrough,
                             fontSize = 16.9.sp
@@ -361,7 +412,7 @@ class MainScreenUI(private val dataManager: DataManager) {
             ) {
                 Text(
                     text = "Add new group",
-                    color = yellowColor
+                    color = Color.White
                 )
             }
         }
@@ -376,7 +427,7 @@ class MainScreenUI(private val dataManager: DataManager) {
         ) {
             Button(
                 onClick = { onClick() },
-                colors = ButtonDefaults.buttonColors(yellowColor)
+                colors = ButtonDefaults.buttonColors(Color.White)
             ) {
                 Text(
                     text = "Add new task +",
@@ -470,7 +521,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = lightYellowColor,
                             unfocusedContainerColor = lightYellowColor,
-                            disabledContainerColor = lightYellowColor,
+                            disabledContainerColor = lightYellowColor
                         ),
                         label = { Text(text = "Class name") },
                         placeholder = {
@@ -667,7 +718,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                     style = TextStyle(
                         fontFamily = FontFamily(Font(R.font.readexpro)),
                         fontSize = 15.sp,
-                        color = yellowColor
+                        color = Color.White
                     )
                 )
             }
@@ -677,15 +728,19 @@ class MainScreenUI(private val dataManager: DataManager) {
     @Composable
     fun MainScreenBackground() {
         Image(
-            painter = painterResource(R.drawable.wallpaper),
+            painter = painterResource(R.drawable.app_background),
             contentDescription = "Wallpaper",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun MainScreenHeader(uncompletedTask: Int) {
+    fun MainScreenHeader(uncompletedTask: Int, username: String) {
+
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy")
 
         Box(
             modifier = Modifier
@@ -697,21 +752,21 @@ class MainScreenUI(private val dataManager: DataManager) {
                 Column(Modifier.padding(start = 9.dp, top = 8.dp)) {
                     Box {
                         Text(
-                            text = "March 29, 2024",
+                            text = current.format(formatter),
                             style = TextStyle(
                                 fontFamily = FontFamily(Font(R.font.readexpro)),
                                 fontSize = 12.sp,
-                                color = yellowColor
+                                color = Color.White
                             )
                         )
                     }
                     Box {
                         Text(
-                            text = "Welcome back\nAlejandro",
+                            text = "Welcome back\n$username",
                             style = TextStyle(
                                 fontFamily = FontFamily(Font(R.font.readexpro)),
                                 fontSize = 20.sp,
-                                color = yellowColor
+                                color = Color.White
                             )
                         )
                     }
@@ -722,7 +777,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                     modifier = Modifier
                         .padding(top = 8.dp, bottom = 8.dp)
                         .size(100.dp),
-                    colorFilter = ColorFilter.tint(yellowColor)
+                    colorFilter = ColorFilter.tint(Color.White)
                 )
                 Column {
                     Box(
@@ -737,7 +792,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                                 style = TextStyle(
                                     fontFamily = FontFamily(Font(R.font.readexpro)),
                                     fontSize = 18.sp,
-                                    color = yellowColor
+                                    color = Color.White
                                 )
                             )
                         } else {
@@ -746,7 +801,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                                 style = TextStyle(
                                     fontFamily = FontFamily(Font(R.font.readexpro)),
                                     fontSize = 18.sp,
-                                    color = yellowColor
+                                    color = Color.White
                                 )
                             )
                         }

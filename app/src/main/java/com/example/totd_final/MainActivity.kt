@@ -2,10 +2,10 @@ package com.example.totd_final
 
 import DataManager
 import MainScreen
+import SignInScreen
 import TasksGroup
 import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,15 +37,30 @@ The class below is the class that runs the code and work in the device
 //                    color = MaterialTheme.colorScheme.background
 //                ) {
 //                    val dataManager = DataManager(this)
-//                    // Check and load existing data
-//                    val tasksGroups: MutableList<TasksGroup> = if (dataManager.getFile().exists()) {
-//                        dataManager.readString()
-//                    } else {
-//                        mutableListOf()
+//                    val signInScreen = SignInScreen()
+//
+//                    var isSignIn by remember {
+//                        mutableStateOf(dataManager.readSignInDataFile().isSignIn)
 //                    }
 //
-//                    val mainScreen = MainScreen(tasksGroups, dataManager = dataManager)
-//                    mainScreen.Run()
+//                    if (!isSignIn){
+//                        signInScreen.showScreen(onClickSave = {
+//                            isSignIn = true
+//                            signInScreen.isSignIn = true
+//                            dataManager.saveSignInData(signInScreen) }
+//                        )
+//                    } else {
+//                        val tasksGroups: MutableList<TasksGroup> = if (dataManager.getFile().exists()) {
+//                            dataManager.readString()
+//                        } else {
+//                            mutableListOf()
+//                        }
+//                        val mainScreen = MainScreen(
+//                            tasksGroups,
+//                            dataManager = dataManager,
+//                            username = dataManager.readSignInDataFile().userName)
+//                        mainScreen.Run()
+//                    }
 //                }
 //            }
 //        }
@@ -69,29 +88,47 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @Preview(showBackground = true, showSystemUi = true)
     @Composable
-    fun GreetingPreview() {
-        TOTD_FinalTheme {
-            MyApp()
-        }
+    fun Preview() {
+        MyApp()
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     private fun MyApp() {
         val context = LocalContext.current
         val dataManager = DataManager(context)
+        val signInScreen = SignInScreen()
 
-        if (!dataManager.getFile().exists()){
-            dataManager.saveInformation(mutableListOf<TasksGroup>())
+        var isSignIn by remember {
+            mutableStateOf(true)
         }
 
-//        var tasksGroup = TasksGroup("MATH", "1A")
-//        tasksGroup.addNewTask("This is a test")
-        val testListOfTasksGroup = mutableListOf<TasksGroup>()
-//        testListOfTasksGroup.add(tasksGroup)
+        if (signInScreen.userName.isNotEmpty()){
+            isSignIn = true
+        }
 
-        val mainScreen = MainScreen(testListOfTasksGroup, dataManager = dataManager)
-        mainScreen.Run()
+        TOTD_FinalTheme {
+            if (!isSignIn){
+                signInScreen.showScreen(onClickSave = {isSignIn = true})
+            } else {
+                if (!dataManager.getFile().exists()){
+                    dataManager.saveInformation(mutableListOf<TasksGroup>())
+                }
+                val testListOfTasksGroup = mutableListOf<TasksGroup>()
+//                testListOfTasksGroup.add(TasksGroup("Test"))
+//                testListOfTasksGroup.add(TasksGroup("Test2"))
+//                testListOfTasksGroup.add(TasksGroup("Test3"))
+//                testListOfTasksGroup.add(TasksGroup("Test4"))
+//                testListOfTasksGroup.add(TasksGroup("Test5"))
+//                testListOfTasksGroup.add(TasksGroup("Test6"))
+//                testListOfTasksGroup.add(TasksGroup("Test7"))
+                val mainScreen = MainScreen(testListOfTasksGroup, dataManager = dataManager, username = "Test")
+                mainScreen.Run()
+            }
+        }
     }
 }
