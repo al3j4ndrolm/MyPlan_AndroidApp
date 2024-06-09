@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 
 data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "", var showTasks: Boolean = false) {
     var taskList = mutableStateListOf<Task>()
+    var onTop = false
 
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName

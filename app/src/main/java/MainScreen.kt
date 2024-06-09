@@ -44,6 +44,14 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataMana
         mutableStateOf(false)
         }
 
+
+        fun <T> MutableList<T>.moveToFront(element: T) {
+            if (this.remove(element)) {
+                this.add(0, element)
+                dataManager.saveInformation(groupsList)
+            }
+        }
+
         Box(modifier = Modifier
             .fillMaxSize()
         ){
@@ -64,7 +72,29 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataMana
                                         tasksGroup = groupsList,
                                         updateUncompletedTask = {
                                             uncompletedTasks = getNumberOfIncompleteTasks()},
-                                        startingValue = taskGroup.showTasks
+                                        startingValue = taskGroup.showTasks,
+                                        onClick = {
+                                            taskGroup.onTop = !taskGroup.onTop
+                                            if (taskGroup.onTop){
+                                                groupsList.moveToFront(taskGroup)
+                                            } else {
+                                                // Find the correct position to insert when onTop is false
+                                                if (groupsList.size > 1) {
+                                                    groupsList.remove(taskGroup)  // Remove taskGroup before re-inserting it
+                                                    var index = 0
+
+                                                    // Loop to find the last onTop = true object
+                                                    while (index < groupsList.size && groupsList[index].onTop) {
+                                                        index++
+                                                    }
+
+                                                    // Insert the taskGroup right after the last onTop = true object
+                                                    groupsList.add(index, taskGroup)
+                                                } else {
+                                                    groupsList.moveToFront(taskGroup)
+                                                }
+                                            }
+                                        }
                                     )
                             }
                             Spacer(modifier = Modifier.padding(20.dp))

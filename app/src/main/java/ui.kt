@@ -1,7 +1,16 @@
 import android.os.Build
+import android.text.BoringLayout
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,12 +71,19 @@ class MainScreenUI(private val dataManager: DataManager) {
     private val lightYellowColor = Color.hsl(36F, 1F, .84F)
     private val fontFamily = FontFamily(Font(R.font.readexpro))
 
+    private fun <T> MutableList<T>.moveToFront(element: T) {
+        if (this.remove(element)) {
+            this.add(0, element)
+        }
+    }
+
     @Composable
     fun TaskGroupContainer(
         tasksGroupInstance: TasksGroup,
         tasksGroup: MutableList<TasksGroup>,
         updateUncompletedTask: () -> Unit,
-        startingValue: Boolean
+        startingValue: Boolean,
+        onClick: () -> Unit
     ) {
         var showAddTaskDialog by remember {
             mutableStateOf(false)
@@ -81,13 +97,10 @@ class MainScreenUI(private val dataManager: DataManager) {
             mutableStateOf(false)
         }
 
-        var containerSize by remember {
-            mutableIntStateOf(250)
-        }
-
-        if (showTasks) {
-            containerSize = 350
-        }
+        val containerSize by animateDpAsState(
+            targetValue = if (showTasks) 350.dp else 250.dp,
+            animationSpec = tween(500)
+        )
 
         Box(
             modifier = Modifier
@@ -108,7 +121,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                         bottomEnd = 12.dp
                     )
                 )
-                .width(containerSize.dp)
+                .width(containerSize)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = { showDeleteGroup = true },
@@ -120,156 +133,192 @@ class MainScreenUI(private val dataManager: DataManager) {
                 }
 
         ) {
-            Column {
-                Box(modifier = Modifier.padding(start = 8.dp)) {
-                    Column {
-                        if (!showTasks) {
-                            containerSize = 250
-                            Row {
-                                Text(
-                                    text = buildAnnotatedString {
-                                        withStyle(
-                                            style = SpanStyle(
-                                                fontSize = 35.sp,
-                                                fontWeight = FontWeight.Light,
-                                                color = redWineColor
-                                            )
-                                        ) {
-                                            append(tasksGroupInstance.taskGroupName)
-                                        }
-                                        append("\n")
-                                        withStyle(
-                                            style = SpanStyle(
-                                                fontSize = 35.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = redWineColor
-                                            )
-                                        ) {
-                                            append(tasksGroupInstance.taskGroupNumber)
-                                        }
-                                    },
-                                    style = TextStyle(
-                                        lineHeight = 36.sp,
-                                        fontFamily = fontFamily,
-                                        fontSize = 35.sp
-                                    ),
-                                )
-                                if (tasksGroupInstance.taskList.size == 0){
-                                    exclamationSignIcon()
+            Row {
+                Column() {
+                    Box(modifier = Modifier
+                        .padding(start = 8.dp)
+                        .fillMaxWidth()) {
+                        Column() {
+                            if (!showTasks) {
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    fontSize = 35.sp,
+                                                    fontWeight = FontWeight.Light,
+                                                    color = redWineColor
+                                                )
+                                            ) {
+                                                append(tasksGroupInstance.taskGroupName)
+                                            }
+                                            append("\n")
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    fontSize = 35.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = redWineColor
+                                                )
+                                            ) {
+                                                append(tasksGroupInstance.taskGroupNumber)
+                                            }
+                                        },
+                                        style = TextStyle(
+                                            lineHeight = 36.sp,
+                                            fontFamily = fontFamily,
+                                            fontSize = 35.sp
+                                        ),
+                                    )
+                                    if (tasksGroupInstance.taskList.any { !it.getState() } ){
+                                        pendingTaskDot()
+                                    }
                                 }
+                                dataManager.saveInformation(tasksGroup)
                             }
-                            dataManager.saveInformation(tasksGroup)
                         }
                     }
-                }
 
-                if (showTasks) {
-                    containerSize = 350
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(
-                                    fontSize = 35.sp,
-                                    fontWeight = FontWeight.Light,
-                                    color = redWineColor
-                                )
-                            ) {
-                                append(tasksGroupInstance.taskGroupName)
-                            }
-                            append(" ")
-                            withStyle(
-                                style = SpanStyle(
-                                    fontSize = 35.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = redWineColor
-                                )
-                            ) {
-                                append(tasksGroupInstance.taskGroupNumber)
-                            }
-                        }, style = TextStyle(
-                            lineHeight = 36.sp,
-                            fontFamily = fontFamily,
-                            fontSize = 35.sp
-                        ),
-                        modifier = Modifier
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onLongPress = { showDeleteGroup = true },
-                                    onTap = {
-                                        showTasks = !showTasks
-                                        tasksGroupInstance.setShowTask()
-                                    }
-                                )
-                            }
-                            .padding(start = 8.dp)
-                    )
-
-
-                    for (task in tasksGroupInstance.taskList) {
-                        TaskElement(
-                            task = task,
-                            tasksGroupInstance = tasksGroupInstance,
-                            tasksGroup = tasksGroup,
-                            updateUncompletedTask = { updateUncompletedTask() }
-                        )
-                    }
-
-                    if (tasksGroupInstance.taskList.size == 0){
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center){
-                            Text(
-                                text = "Is empty here! Press \"Add new task\".",
+                    if (showTasks) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontSize = 35.sp,
+                                        fontWeight = FontWeight.Light,
+                                        color = redWineColor
+                                    )
+                                ) {
+                                    append(tasksGroupInstance.taskGroupName)
+                                }
+                                append(" ")
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontSize = 35.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = redWineColor
+                                    )
+                                ) {
+                                    append(tasksGroupInstance.taskGroupNumber)
+                                }
+                            }, style = TextStyle(
+                                lineHeight = 36.sp,
                                 fontFamily = fontFamily,
-                                fontStyle = FontStyle.Italic,
-                                color = Color.LightGray
+                                fontSize = 35.sp
+                            ),
+                            modifier = Modifier
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = { showDeleteGroup = true },
+                                        onTap = {
+                                            showTasks = !showTasks
+                                            tasksGroupInstance.setShowTask()
+                                        }
+                                    )
+                                }
+                                .padding(start = 8.dp)
+                        )
+
+
+                        for (task in tasksGroupInstance.taskList) {
+                            TaskElement(
+                                task = task,
+                                tasksGroupInstance = tasksGroupInstance,
+                                tasksGroup = tasksGroup,
+                                updateUncompletedTask = { updateUncompletedTask() }
                             )
                         }
+
+                        if (tasksGroupInstance.taskList.size == 0){
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center){
+                                Text(
+                                    text = "Is empty here! Press \"Add new task\".",
+                                    fontFamily = fontFamily,
+                                    fontStyle = FontStyle.Italic,
+                                    fontSize = 13.sp,
+                                    color = Color.LightGray
+                                )
+                            }
+                        }
+
+                        AddNewTaskButton {
+                            showAddTaskDialog = true
+                        }
+                        if (showAddTaskDialog) {
+                            AddNewTaskDialog(
+                                tasksGroupInstance,
+                                onDismissRequest = { showAddTaskDialog = false },
+                                tasksGroup = tasksGroup,
+                                updateUncompletedTask = updateUncompletedTask
+                            )
+                        }
+                        dataManager.saveInformation(tasksGroup)
                     }
 
-                    AddNewTaskButton {
-                        showAddTaskDialog = true
-                    }
-                    if (showAddTaskDialog) {
-                        AddNewTaskDialog(
-                            tasksGroupInstance,
-                            onDismissRequest = { showAddTaskDialog = false },
-                            tasksGroup = tasksGroup,
-                            updateUncompletedTask = updateUncompletedTask
+                    if (showDeleteGroup) {
+                        DeleteGroupDialog(
+                            onDismissRequest = { showDeleteGroup = false },
+                            onClick = {
+                                tasksGroup.remove(tasksGroupInstance)
+                                dataManager.saveInformation(tasksGroup)
+                                updateUncompletedTask()
+                            }
                         )
                     }
-                    dataManager.saveInformation(tasksGroup)
-                }
-
-                if (showDeleteGroup) {
-                    DeleteGroupDialog(
-                        onDismissRequest = { showDeleteGroup = false },
-                        onClick = {
-                            tasksGroup.remove(tasksGroupInstance)
-                            dataManager.saveInformation(tasksGroup)
-                            updateUncompletedTask()
-                        }
-                    )
                 }
             }
+            bookMark(
+                onClick = {
+                    onClick()
+                },
+                onTopValue = tasksGroupInstance.onTop
+            )
         }
     }
 
+
+
     @Composable
-    fun exclamationSignIcon(){
+    fun pendingTaskDot(){
         Box(modifier = Modifier
-            .padding(top = 4.dp, start = 4.dp)
-            .size(20.dp)
+            .padding(top = 6.dp, start = 4.dp)
+            .size(10.dp)
             .background(redWineColor, shape = RoundedCornerShape(16.dp)),
-            contentAlignment = Alignment.Center
+        )
+    }
+
+    @Composable
+    fun bookMark(onClick: () -> Unit, onTopValue: Boolean){
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp, end = 4.dp),
+            contentAlignment = Alignment.BottomEnd
         ) {
-            Icon(
-                painter = painterResource(
-                    id = R.drawable.priority_high_24dp_fill0_wght400_grad0_opsz24),
-                contentDescription = "Exclamation",
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
+            if (onTopValue){
+                Icon(
+                    painter = painterResource(
+                        id = R.drawable.bookmark_star_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = "Bookmark",
+                    tint = redWineColor,
+                    modifier = Modifier
+                        .clickable {
+                            onClick()
+                        }
+                )
+            } else {
+                Icon(
+                    painter = painterResource(
+                        id = R.drawable.bookmark_add_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = "Bookmark",
+                    tint = Color.LightGray,
+                    modifier = Modifier
+                        .clickable {
+                            onClick()
+                        }
+                )
+            }
         }
     }
 
@@ -346,6 +395,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                     Text(
                         text = task.getTaskDescription(),
                         modifier = Modifier
+                            .width(300.dp)
                             .alignByBaseline()
                             .padding(start = 8.dp)
                             .pointerInput(Unit) {
@@ -386,7 +436,7 @@ class MainScreenUI(private val dataManager: DataManager) {
                 Icon(
                     modifier = Modifier.size(80.dp),
                     tint = redWineColor,
-                    painter = painterResource(id = R.drawable.error_24dp_fill0_wght400_grad0_opsz24),
+                    painter = painterResource(id = R.drawable.new_window_24dp_fill0_wght400_grad0_opsz24),
                     contentDescription = "No task"
                 )
 
