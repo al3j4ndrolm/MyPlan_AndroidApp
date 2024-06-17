@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.totd_final"
+    namespace = "com.bizarr.myPlanApp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.totd_final"
+        applicationId = "com.bizarr.myPlanApp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
