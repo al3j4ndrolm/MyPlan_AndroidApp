@@ -47,13 +47,14 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         val tasksGroups: MutableList<TasksGroup> = if (dataManager.getFile().exists()) {
-                            dataManager.readString()
+                            dataManager.readTaskGroupsInformation()
                         } else {
                             mutableListOf()
                         }
                         val mainScreen = MainScreen(
                             tasksGroups,
                             dataManager = dataManager,
+                            isDialogOpen = dataManager.readShowAddNewTaskGroupDialogFile(),
                             username = dataManager.readSignInDataFile().userName)
                         mainScreen.Run()
                     }
@@ -78,6 +79,7 @@ The class below is the class that should be use the make changes in the UI
 //                    modifier = Modifier.fillMaxSize(),
 //                    color = MaterialTheme.colorScheme.background
 //                ) {
+//
 //                    MyApp()
 //                }
 //            }
@@ -88,6 +90,7 @@ The class below is the class that should be use the make changes in the UI
 //    @Preview(showBackground = true, showSystemUi = true)
 //    @Composable
 //    fun Preview() {
+////        SignInScreen().showScreen {}
 //        MyApp()
 //    }
 //
@@ -103,28 +106,35 @@ The class below is the class that should be use the make changes in the UI
 //            mutableStateOf(true)
 //        }
 //
-//        if (signInScreen.userName.isNotEmpty()){
+//        if (signInScreen.userName.isNotEmpty()) {
 //            isSignIn = true
 //        }
 //
 //        TOTD_FinalTheme {
-//            if (!isSignIn){
-//                signInScreen.showScreen(onClickSave = {isSignIn = true})
+//            if (!isSignIn) {
+//                signInScreen.showScreen(onClickSave = { isSignIn = true })
 //            } else {
-//                if (!dataManager.getFile().exists()){
-//                    dataManager.saveInformation(mutableListOf<TasksGroup>())
+//                if (!dataManager.getFile().exists()) {
+//                    dataManager.saveTaskGroupsInformation(mutableListOf<TasksGroup>())
 //                }
 //                val testListOfTasksGroup = mutableListOf<TasksGroup>()
 //                val testTasksGroup = TasksGroup("Test")
 //                testTasksGroup.addNewTask("Test")
 //                testListOfTasksGroup.add(testTasksGroup)
-////                testListOfTasksGroup.add(TasksGroup("Test2"))
-////                testListOfTasksGroup.add(TasksGroup("Test3"))
-////                testListOfTasksGroup.add(TasksGroup("Test4"))
+//                testListOfTasksGroup.add(TasksGroup("Test2"))
+//                testListOfTasksGroup.add(TasksGroup("Test3"))
+//                testListOfTasksGroup.add(TasksGroup("Test4"))
 ////                testListOfTasksGroup.add(TasksGroup("Test5"))
 ////                testListOfTasksGroup.add(TasksGroup("Test6"))
 ////                testListOfTasksGroup.add(TasksGroup("Test7"))
-//                val mainScreen = MainScreen(testListOfTasksGroup, dataManager = dataManager, username = "Test")
+//                val mainScreen =
+//                    MainScreen(
+//                        testListOfTasksGroup,
+//                        dataManager = dataManager,
+//                        username = "Test",
+//                        isDialogOpen = dataManager.readShowAddNewTaskGroupDialogFile(),
+//                        showAddNewTaskDialogData = dataManager.readshowAddNewTaskDialogFile()
+//                    )
 //                mainScreen.Run()
 //            }
 //        }

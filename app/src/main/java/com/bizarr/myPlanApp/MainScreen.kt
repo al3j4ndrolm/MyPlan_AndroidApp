@@ -21,7 +21,11 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataManager, var username: String) {
+class MainScreen(
+    tasksGroups: MutableList<TasksGroup>,
+    val dataManager: DataManager,
+    var username: String,
+    var isDialogOpen: Boolean, ){
 
     var groupsList = tasksGroups.toMutableStateList()
 
@@ -29,21 +33,23 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataMana
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun Run(){
-        val ui = MainScreenUI(dataManager)
+        val ui = MainScreenUI(
+            dataManager = dataManager,
+        )
 
         var uncompletedTasks by remember {
             mutableIntStateOf(getNumberOfIncompleteTasks())
         }
 
         var showDialog by remember {
-        mutableStateOf(false)
+        mutableStateOf(isDialogOpen)
         }
 
 
         fun <T> MutableList<T>.moveToFront(element: T) {
             if (this.remove(element)) {
                 this.add(0, element)
-                dataManager.saveInformation(groupsList)
+                dataManager.saveTaskGroupsInformation(groupsList)
             }
         }
 
@@ -66,32 +72,28 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataMana
                                         tasksGroupInstance = taskGroup,
                                         tasksGroup = groupsList,
                                         updateUncompletedTask = {
-                                            uncompletedTasks = getNumberOfIncompleteTasks()},
-                                        startingValue = taskGroup.showTasks,
-                                        onClick = {
-                                            taskGroup.onTop = !taskGroup.onTop
-                                            if (taskGroup.onTop){
-                                                groupsList.moveToFront(taskGroup)
-                                            } else {
-                                                // Find the correct position to insert when onTop is false
-                                                if (groupsList.size > 1) {
-                                                    groupsList.remove(taskGroup)  // Remove taskGroup before re-inserting it
-                                                    var index = 0
+                                            uncompletedTasks = getNumberOfIncompleteTasks()}
+                                    ) {
+                                        taskGroup.onTop = !taskGroup.onTop
+                                        if (taskGroup.onTop) {
+                                            groupsList.moveToFront(taskGroup)
+                                        } else {
 
-                                                    // Loop to find the last onTop = true object
-                                                    while (index < groupsList.size && groupsList[index].onTop) {
-                                                        index++
-                                                    }
+                                            if (groupsList.size > 1) {
+                                                groupsList.remove(taskGroup)
+                                                var index = 0
 
-                                                    // Insert the taskGroup right after the last onTop = true object
-                                                    groupsList.add(index, taskGroup)
-                                                } else {
-                                                    groupsList.moveToFront(taskGroup)
+                                                while (index < groupsList.size && groupsList[index].onTop) {
+                                                    index++
                                                 }
+
+                                                groupsList.add(index, taskGroup)
+                                            } else {
+                                                groupsList.moveToFront(taskGroup)
                                             }
                                         }
-                                    )
-                            }
+                                    }
+                                }
                             Spacer(modifier = Modifier.padding(20.dp))
 
                         }
@@ -99,13 +101,19 @@ class MainScreen(tasksGroups: MutableList<TasksGroup>, val dataManager: DataMana
 
                     if (showDialog){
                         ui.AddNewTaskGroupDialog(
-                            onDismissRequest = {showDialog = false},
+                            onDismissRequest = {
+                                showDialog = false
+                                dataManager.saveShowAddNewTaskGroupDialog(showDialog)
+                                               },
                             tasksGroup = groupsList,
-                            saveData = {dataManager.saveInformation(groupsList)}
+                            saveData = {dataManager.saveTaskGroupsInformation(groupsList)}
                         )
                     }
                 }
-                ui.AddNewGroupButton { showDialog = true }
+                ui.AddNewGroupButton {
+                    showDialog = true
+                    dataManager.saveShowAddNewTaskGroupDialog(showDialog)
+                }
             }
             if (groupsList.size == 0){
                 ui.NoTaskMessage()

@@ -2,9 +2,12 @@ package com.bizarr.myPlanApp
 
 import androidx.compose.runtime.mutableStateListOf
 
-data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "", var showTasks: Boolean = false) {
+data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "") {
     var taskList = mutableStateListOf<Task>()
     var onTop = false
+    var showTasks: Boolean = false
+    var isShowTaskDialogOpen = false
+    var lastTaskWritten = "ups"
 
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName
@@ -16,7 +19,6 @@ data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "
 
     fun removeTask(task: Task){
         taskList.remove(task)
-
     }
 
     fun clearTaskGroup(){
@@ -29,5 +31,9 @@ data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "
 
     fun setShowTask(){
         this.showTasks = !showTasks
+    }
+
+    fun setLastTaskWroten(text: String){
+        this.lastTaskWritten = text
     }
 }

@@ -101,10 +101,12 @@ class SignInScreen {
                         unfocusedContainerColor = lightGray,
                         disabledContainerColor = lightGray
                     ),
+                    textStyle = TextStyle(color = Color.Black),
                     label = { Text(
                         text = "Your name here",
-                        color = Color.LightGray
-                    ) }
+                        color = Color.DarkGray
+                    )
+                    }
                 )
                 SaveButton(value = name, onClickSave)
             }
