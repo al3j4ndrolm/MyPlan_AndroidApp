@@ -7,7 +7,7 @@ data class TasksGroup(var taskGroupName: String, var taskGroupNumber: String = "
     var onTop = false
     var showTasks: Boolean = false
     var isShowTaskDialogOpen = false
-    var lastTaskWritten = "ups"
+    var lastTaskWritten = ""
 
     fun setNewTaskGroupName(newName: String){
         this.taskGroupName = newName

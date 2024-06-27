@@ -11,8 +11,8 @@ android {
         applicationId = "com.bizarr.myPlanApp"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1.1"
+        versionCode = 4
+        versionName = "1.1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -58,12 +58,18 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation ("androidx.compose.ui:ui:1.4.3")
-    implementation ("androidx.compose.animation:animation:1.4.3")
-    implementation ("androidx.compose.ui:ui-tooling-preview:1.4.3")
+    implementation ("androidx.compose.ui:ui:1.6.8")
+    implementation ("androidx.compose.animation:animation:1.6.8")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.6.8")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation ("androidx.activity:activity-compose:1.7.2")
-
+    implementation ("androidx.compose.material:material:1.6.8")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.6.8")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.8")
+    implementation ("androidx.compose.runtime:runtime-rxjava2:1.6.8")
+    implementation ("androidx.core:core-ktx:1.6.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,6 +77,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation("com.google.code.gson:gson:2.10.1")
 }

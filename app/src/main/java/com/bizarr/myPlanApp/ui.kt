@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -317,7 +318,7 @@ class MainScreenUI(private val dataManager: DataManager,) {
                         id = R.drawable.bookmark_add_24dp_fill0_wght400_grad0_opsz24
                     ),
                     contentDescription = "Non active Bookmark for $tasksGroupInstanceName",
-                    tint = Color.LightGray,
+                    tint = Color.Gray,
                     modifier = Modifier
                         .clickable {
                             onClick()
@@ -762,21 +763,17 @@ class MainScreenUI(private val dataManager: DataManager,) {
     ) {
         Box(
             Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            contentAlignment = Alignment.BottomCenter,
         ) {
             Button(
                 onClick = onClickSave,
+                shape = RoundedCornerShape(
+                    bottomStart = 16.dp,
+                    bottomEnd = 16.dp),
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .background(
-                        color = redWineColor,
-                        shape = RoundedCornerShape(
-                            bottomStart = 16.dp,
-                            bottomEnd = 16.dp
-                        )
-
-                    ),
+                    .height(48.dp),
                 colors = ButtonDefaults.buttonColors(redWineColor)
             ) {
                 Text(
@@ -795,12 +792,19 @@ class MainScreenUI(private val dataManager: DataManager,) {
 
     @Composable
     fun MainScreenBackground() {
-        Image(
-            painter = painterResource(R.drawable.app_background),
-            contentDescription = "Wallpaper",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+        Box {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x88000000)) // Semi-transparent black overlay
+            )
+            Image(
+                painter = painterResource(R.drawable.app_background),
+                contentDescription = "Wallpaper",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -822,9 +826,18 @@ class MainScreenUI(private val dataManager: DataManager,) {
             ) {
                 Box(
                     modifier = Modifier
-                        .background(redWineColor, shape = RoundedCornerShape(bottomEnd = 10.dp))
                         .width(205.dp)
                         .fillMaxHeight()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(
+                                bottomEnd = 12.dp
+                            ),
+                            ambientColor = Color.Gray,
+                            spotColor = Color.Red
+                        ).background(redWineColor, shape = RoundedCornerShape(bottomEnd = 10.dp))
+
+
                 ) {
                     Column(Modifier.padding(start = 9.dp, top = 8.dp)) {
                         Box {
@@ -858,7 +871,14 @@ class MainScreenUI(private val dataManager: DataManager,) {
                     modifier = Modifier
                         .padding()
                         .size(180.dp)
-                        .background(redWineColor, shape = RoundedCornerShape(bottomStart = 35.dp)),
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(
+                                bottomStart = 35.dp
+                            ),
+                            ambientColor = Color.Gray.copy(alpha = 0.8f),
+                            spotColor = Color.Red.copy(alpha = 0.8f)
+                        ).background(redWineColor),
                     contentAlignment = Alignment.Center
                 ) {
 

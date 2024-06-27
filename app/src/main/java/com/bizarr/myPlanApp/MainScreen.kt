@@ -45,6 +45,11 @@ class MainScreen(
         mutableStateOf(isDialogOpen)
         }
 
+        //TEST
+//        var showDialog by remember {
+//            mutableStateOf(true)
+//        }
+
 
         fun <T> MutableList<T>.moveToFront(element: T) {
             if (this.remove(element)) {
