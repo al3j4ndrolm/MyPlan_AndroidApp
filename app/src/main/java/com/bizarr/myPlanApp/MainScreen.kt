@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -19,24 +20,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 class MainScreen(
     tasksGroups: MutableList<TasksGroup>,
     val dataManager: DataManager,
     var username: String,
-    var isDialogOpen: Boolean, ){
+    var isDialogOpen: Boolean,
+    ){
+    private var groupsList = tasksGroups.toMutableStateList()
 
-    var groupsList = tasksGroups.toMutableStateList()
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun Run(){
-        val ui = MainScreenUI(
+        val ui = AppUI(
             dataManager = dataManager,
         )
 
+        val context = LocalContext.current
         var uncompletedTasks by remember {
             mutableIntStateOf(getNumberOfIncompleteTasks())
         }
@@ -45,18 +49,15 @@ class MainScreen(
         mutableStateOf(isDialogOpen)
         }
 
-        //TEST
-//        var showDialog by remember {
-//            mutableStateOf(true)
-//        }
-
-
+        
         fun <T> MutableList<T>.moveToFront(element: T) {
             if (this.remove(element)) {
                 this.add(0, element)
                 dataManager.saveTaskGroupsInformation(groupsList)
             }
         }
+
+
 
         Box(modifier = Modifier
             .fillMaxSize()
@@ -124,9 +125,18 @@ class MainScreen(
                 ui.NoTaskMessage()
             }
         }
+        LaunchedEffect(key1 = true) {
+            NotificationScheduler
+                .scheduleNotification(
+                    context,
+                    hour = 10,
+                    minute = 57
+                )
+        }
     }
 
-    private fun getNumberOfIncompleteTasks(): Int {
+    @JvmName("getNumberOfIncompleteTasksMethod")
+    fun getNumberOfIncompleteTasks(): Int {
         var incompleteTasksCountKeeper = 0
 
         for (taskGroup in groupsList){

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,7 +59,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class MainScreenUI(private val dataManager: DataManager,) {
+class AppUI(private val dataManager: DataManager,) {
     private val yellowColor = Color.hsl(36F, 1F, .67F)
     private val darkLightYellow = Color.hsl(36F, .54F, .71F)
     private val redWineColor = Color.hsl(354F, .95F, .22F)
@@ -223,7 +222,7 @@ class MainScreenUI(private val dataManager: DataManager,) {
 
                         if (tasksGroupInstance.taskList.size == 0) {
                             Box(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(top=8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -318,7 +317,7 @@ class MainScreenUI(private val dataManager: DataManager,) {
                         id = R.drawable.bookmark_add_24dp_fill0_wght400_grad0_opsz24
                     ),
                     contentDescription = "Non active Bookmark for $tasksGroupInstanceName",
-                    tint = Color.Gray,
+                    tint = Color(0xFF707070),
                     modifier = Modifier
                         .clickable {
                             onClick()
@@ -853,6 +852,7 @@ class MainScreenUI(private val dataManager: DataManager,) {
                         Box(
                             Modifier
                                 .background(redWineColor)
+                                .padding(8.dp)
                                 .clip(shape = RoundedCornerShape(bottomEnd = 10.dp))
                         ) {
                             Text(
